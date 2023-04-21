@@ -94,9 +94,14 @@ const configuration: webpack.Configuration = {
       },
       // Images
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        test: /\.(png|jpg|jpeg|gif|svg)$/i,
         type: 'asset/resource',
       },
+      // {
+      //   test: /\.(svg)$/i,
+      //   type: 'asset/source',
+      //   include: /(node_modules)\/quill-react-commercial/,
+      // },
     ],
   },
   plugins: [

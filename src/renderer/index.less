@@ -7,7 +7,41 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+// 文字主色，不要到处写，会继承
+@primary-color: #4a4a4a;
+// 所有超链接、Tab、高亮等颜色
+@active-color: #7ba7ff;
+// 分割线的颜色
+@hr-color: #ecf3fc;
+// 文字红色色值
+@red: #d0021b;
+// 默认行高
+@line-height: 1.5;
+// footer背景颜色
+@footer-color: #333;
+// header高度
+@header-height: 120px;
+@menu-bg: #f2faff;
+@menu-icon-size: 16px;
+
+@greybg: #f7f7f7;
+// 提示主色但不限于提示
+@grey66: #666666;
+@grey99: #999999;
+// 柱状图主色
+@red1B: #d0021b;
+// 柱状图次色
+@green35: #50ac35;
+// 柱状图主色
+@glod77: #ccac77;
+@greyEE: #eeeeee;
+@colorF70: #ff7700;
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.row {
+  flex-direction: row;
 }

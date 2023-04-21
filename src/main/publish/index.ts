@@ -23,11 +23,23 @@ export const mainPublish = (mainWindow: BrowserWindow) => {
 
   ipcMain.on('publish', async (event, arg: Arg) => {
     console.log('开始发布：', event, arg);
-    postProcess('all', {
+    const { key, payload = {}, needPuppeteer = true } = arg || {};
+    postProcess(key, {
       process: 0,
       message: '开始发布',
     });
-    const { key, payload = {}, needPuppeteer = true } = arg || {};
+    if (!payload.note) {
+      postProcess(key, {
+        type: 'error',
+        message: `发布note为空`,
+        help: {
+          url: '',
+          description: '点击查看常见问题',
+        },
+      });
+      return;
+    }
+
     const isDebug =
       process.env.NODE_ENV === 'development' ||
       process.env.DEBUG_PROD === 'true';
@@ -40,11 +52,24 @@ export const mainPublish = (mainWindow: BrowserWindow) => {
         width: 1500,
         height: 800,
       });
-      // const url = 'https://www.baidu.com/';
-      await window.loadURL(payload.url || handlers[key].startUrl);
+      const targetUrl = payload.url || handlers[key].startUrl;
+      try {
+        await window.loadURL(targetUrl);
+      } catch (e) {
+        console.log(e);
+        postProcess(key, {
+          type: 'error',
+          message: `加载${targetUrl}网络错误`,
+          help: {
+            url: '',
+            description: '点击查看常见问题',
+          },
+        });
+      }
+
       const contents = window.webContents;
       console.log('UA:', contents.getUserAgent()); // TODO 设置UA：最好替换掉Electron/18.0.3之类的标识
-      postProcess('all', {
+      postProcess(key, {
         process: 10,
         message: '加载初始网址完成',
       });

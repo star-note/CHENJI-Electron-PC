@@ -36,7 +36,7 @@ const configuration: webpack.Configuration = {
 
   output: {
     path: webpackPaths.distRendererPath,
-    publicPath: './',
+    publicPath: '/',
     // 为了防止静态资源被缓存，将打包输出加入 文件内容hash（chunkhash）的标示
     filename: '[name].[contenthash].js',
     // 如有使用import()动态加载的代码打包
@@ -76,8 +76,12 @@ const configuration: webpack.Configuration = {
       },
       // Images
       {
-        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        test: /\.(png|jpg|jpeg|gif)$/i,
         type: 'asset/resource',
+      },
+      {
+        test: /\.(svg)$/i,
+        type: 'asset/source',
       },
     ],
   },

@@ -19,7 +19,10 @@ const Board = (props: IPublishBoard) => {
     if (window.electron) {
       publishElectron('github', {
         username: 'ludejun07@gmail.com',
-        password: '*****',
+        password: 'ludejun05202415',
+        repo: 'CHENJI',
+        note: activeNote || {title: 'index', content: [{a: 123}]},
+        path: ''
       });
     } else if (publishWebFns && publishWebFns.current) {
       publishWebFns.current[item].publishHandler(
@@ -31,6 +34,7 @@ const Board = (props: IPublishBoard) => {
             keepPath: true,
           },
           note: activeNote,
+          path: ''
         },
         params => {
           const { process, message, help, type } = params;

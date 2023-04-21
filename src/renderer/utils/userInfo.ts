@@ -3,12 +3,12 @@ import store from '../store';
 
 export interface UserInfo {
   token: string;
-  id: number;
+  id: string;
   name: string;
   avatarUrl?: string;
   email?: string;
   mobile?: string;
-  nickname?: string;
+  nickName?: string;
 }
 export const getUserInfo = (): UserInfo | null => {
   const { userInfo } = store.getState().user;

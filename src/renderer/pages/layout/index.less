@@ -1,3 +1,5 @@
+@import '../../index.less';
+
 .main-layout {
   width: 100vw;
   height: 100vh;
@@ -6,30 +8,130 @@
 
   .first-slider {
     width: 300px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     height: 100vh;
-    color: #fff;
-    padding: 20px 0;
-    background-color: black;
+    color: @primary-color;
+    background-color: #fff;
+    box-shadow: 2px 0px 4px 0px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    position: relative;
+    transition: width 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
 
     .logo {
       text-align: center;
       cursor: pointer;
+      font-size: 18px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .add-note {
-      text-align: center;
+    .ant-menu-inline .ant-menu-item::before,
+    .note-item::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      border-right: 4px solid @active-color;
+      transform: scaleY(0.0001);
+      opacity: 0;
+      transition: transform 0.15s cubic-bezier(0.215, 0.61, 0.355, 1),
+        opacity 0.15s cubic-bezier(0.215, 0.61, 0.355, 1);
+      content: '';
+    }
+    .ant-menu-inline .ant-menu-item-selected::before,
+    .note-item-active::before {
+      transform: scaleY(1);
+      opacity: 1;
+      transition: transform 0.15s cubic-bezier(0.645, 0.045, 0.355, 1),
+        opacity 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
+    }
+    .ant-menu-inline .ant-menu-item::after {
+      border-right: 0;
+    }
+    // 默认antd的menu左侧留白过大
+    .ant-menu-inline .ant-menu-item,
+    .ant-menu-submenu-title {
+      margin-bottom: 0;
+      margin-top: 0;
+      padding-left: 16px !important;
+    }
+    .ant-menu-title-content {
+      margin-left: 4px;
+    }
+    .ant-menu-item-icon {
+      font-size: @menu-icon-size;
+      min-width: @menu-icon-size;
+    }
+    .ant-menu-submenu-open {
+      color: @active-color;
+    }
+
+    .ant-menu-item-selected {
+      color: @active-color;
+      background-color: @menu-bg !important;
+    }
+    .ant-menu-inline,
+    .ant-menu-vertical {
+      border: 0;
+    }
+    .slider-collapse {
+      position: absolute;
+      right: 6px;
+      top: 12px;
+      font-size: 16px;
       cursor: pointer;
     }
 
     .first-note-tree {
-      .ant-menu {
-        line-height: 1.5;
+      position: relative;
+      .right-icons  {
+          height: 40px;
+          position: absolute;
+          top: 0;
+          right: 40px;
+          color: rgba(0, 0, 0, 0.85);
+
+        .plus {
+          display: none;
+        }
       }
+      .ant-menu-submenu-title:hover {
+        .plus {
+          display: flex;
+        }
+      }
+    }
+  }
+  .first-slider-collapsed {
+    width: 80px;
+    .logo {
+      visibility: hidden;
+    }
+    .ant-menu-submenu-title {
+      text-align: center;
+      padding-left: calc(50% - 8px) !important;
     }
   }
 
   .layout-content {
     flex: 1;
+    overflow: auto;
+  }
+  #drag-btn {
+    width: 4px;
+    background-color: #fff;
+    height: 100%;
+    cursor: ew-resize;
+    .drag-line {
+      height: 28px;
+      border-right: 1px solid #ddd;
+      width: 4px;
+    }
+  }
+  #drag-btn:hover {
+    background-color: @active-color;
   }
 }

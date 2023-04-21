@@ -1,0 +1,51 @@
+.editor-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  .content-container {
+    min-height: calc(100vh - 48px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .note-title {
+    display: flex;
+    flex-direction: row;
+    input {
+      outline: none;
+      background: none;
+      border: none;
+      font-size: 18px;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px 15px;
+    }
+    .button-list {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding-right: 24px;
+    }
+  }
+
+  // 对编辑器css自定义
+  .ql-toolbar.ql-snow {
+    border-left: 0;
+    border-right: 0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #fff;
+  }
+  .ql-container.ql-snow {
+    border: 0;
+  }
+  // .ql-editor ol {
+  //   padding-left: 0;
+
+  // }
+  // .ql-container .ql-tooltip.ql-editing a.ql-preview {
+  //   margin-left: 16px;
+  // }
+}

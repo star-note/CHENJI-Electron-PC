@@ -3,6 +3,7 @@
  */
 
 import webpack from 'webpack';
+// import path from 'path';
 import webpackPaths from './webpack.paths';
 import { dependencies as externals } from '../../release/app/package.json';
 
@@ -15,7 +16,9 @@ const configuration: webpack.Configuration = {
     rules: [
       {
         test: /\.[jt]sx?$/,
+        // include: path.resolve(__dirname, 'node_modules/quill-react-commercial'),
         exclude: /node_modules/,
+        // include: path.resolve(__dirname, 'node_modules/quill-react-commercial'),
         use: {
           loader: 'ts-loader',
           options: {

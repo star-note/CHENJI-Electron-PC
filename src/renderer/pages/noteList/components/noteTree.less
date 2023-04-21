@@ -1,16 +1,55 @@
+@import '../../../index.less';
+
 .note-container {
-  padding: 10px 15px 10px 0;
   .note-item {
-    padding-left: 15px;
+    height: 40px;
+    line-height: 40px;
     cursor: pointer;
+    position: relative;
+    .item-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .handler-zoo {
+      position: absolute;
+      right: 4px;
+      top: 10px;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+      display: flex;
+      >div {
+        margin-left: 4px;
+      }
+    }
   }
   .note-item-hide {
     display: none;
   }
   .note-item-active {
-    background-color: blue;
+    background-color: @menu-bg;
+    color: @active-color;
+    .handler-zoo {
+      opacity: 1;
+    }
+  }
+  .note-item:hover {
+    .handler-zoo {
+      opacity: 1;
+    }
   }
   .note-children {
-    padding-left: 15px;
+    transition: max-height 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    max-height: 100%;
+    overflow: hidden;
+  }
+  .note-hide {
+    max-height: 0;
+    overflow: hidden;
+    // transition: max-height 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
+  .note-folder-icon {
+    font-size: @menu-icon-size;
+    margin-right: 4px;
   }
 }

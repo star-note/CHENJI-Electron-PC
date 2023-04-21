@@ -8,15 +8,15 @@ const configs = {
   successCode: { key: 'errCode', value: '0000' }, // API请求的业务正常Code
   env: process.env.NODE_ENV,
   apiServer: {
-    local: 'http://localhost:8000',
-    development: 'http://localhost:8000',
-    production: 'http://129.211.39.181:8800',
+    local: 'http://localhost:8001',
+    development: 'http://localhost:8001',
+    production: 'http://10.66.14.30:8001',
     mock: '',
   } as Record<Env, string>, // API请求各环境的Domain配置
   staticUrl: {
     local: '',
     development: '',
-    production: 'http://129.211.39.181',
+    production: 'http://10.66.14.30:8001',
     mock: '',
   } as Record<Env, string>,
   mockWhiteList: [] as string[], // 后端Mock Server的白名单，在白名单中可走Mock服务器，不然还是走DEV服务器

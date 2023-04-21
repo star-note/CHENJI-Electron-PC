@@ -1,15 +1,38 @@
-.notelist {
+@import '../../index.less';
 
-  .note-layout {
-    .note-header {
-      padding: 0;
-    }
-    .note-content {
-      min-height: calc(100vh - 134px);
+.note-layout {
+  // .note-header {
+  //   padding: 0 20px;
+  //   height: 32px;
+  //   line-height: 32px;
+  //   text-align: right;
+  //   color: #fff;
+  // }
+  .note-content {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    background-color: #fff;
+  }
+}
 
-      .ql-container {
-        min-height: 400px;
-      }
-    }
+.space-container {
+  .note-container {
+    max-height: 0;
+    overflow: hidden;
+  }
+
+  .space-tree-active {
+    opacity: 1;
+    max-height: 100%;
+  }
+  .space-name {
+    height: 40px;
+    line-height: 40px;
+    cursor: pointer;
+    position: relative;
+    padding-left: 16px;
+  }
+  .space-name-active {
+    color: @active-color;
   }
 }

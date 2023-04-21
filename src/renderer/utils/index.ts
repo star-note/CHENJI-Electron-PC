@@ -24,8 +24,8 @@ export {
   Storage,
   throttle,
   debance,
-  UserInfo,
   getUserInfo,
   setUserInfo,
   removeUserInfo,
 };
+export type { UserInfo };

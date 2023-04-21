@@ -23,10 +23,10 @@ const Login: React.FC<ILogin> = props => {
     login({
       params: values,
       apiName: 'sign',
-    }).then((userInfo: UserInfo | undefined) => {
+    }).then(userInfo => {
       if (userInfo?.token) {
         setUserInfo(userInfo);
-        navigate('/main/notelist');
+        navigate('/notelist');
       }
     });
   };
@@ -71,6 +71,7 @@ const Login: React.FC<ILogin> = props => {
           <Button type="primary" htmlType="submit" loading={loginLoading}>
             登录
           </Button>
+          <Button onClick={() => navigate('/register')}>注册</Button>
         </Form.Item>
       </Form>
     </div>
@@ -80,7 +81,7 @@ const Login: React.FC<ILogin> = props => {
 const mapStateToProps = ({ user }: RootState) => ({
   loginLoading: user.loginLoading,
 });
-const mapDispatchToProps = ({ user: { login } }: DispatchPro): any => ({
+const mapDispatchToProps = ({ user: { login } }: DispatchPro) => ({
   login,
 });
 

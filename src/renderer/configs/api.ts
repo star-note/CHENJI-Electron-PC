@@ -16,18 +16,17 @@ export function apiURL(type: string) {
 }
 
 export function setHeader() {
-  const { token = '' } = getUserInfo() || {};
+  const { token = '', id } = getUserInfo() || {};
   return {
     'Content-Type': 'application/json',
     Authorization: token ? `Bearer ${token}` : '',
-    'starnote-client': `web;source=pc;version=${configs.version};env=${process.env.NODE_ENV}`,
+    'starnote-client': `source=pc;version=${configs.version};env=${process.env.NODE_ENV}`,
+    loginNo: String(id),
   };
 }
 
 // 基本的Get请求options封装
-export function ajaxGetOptions(
-  header: Record<string, string> = {}
-): RequestInit {
+export function ajaxGetOptions(header: HeadersInit = {}): RequestInit {
   return {
     method: 'GET',
     headers: {
@@ -40,8 +39,9 @@ export function ajaxGetOptions(
 // 基本的Post请求options封装
 export function ajaxPostOptions(
   data: Record<string, unknown>,
-  header: Record<string, string> = {}
+  header: HeadersInit = {}
 ): RequestInit {
+  const { id } = getUserInfo() || {};
   return {
     method: 'POST',
     headers: {
@@ -49,17 +49,25 @@ export function ajaxPostOptions(
       ...header,
     },
     // credentials: 'include',
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      loginUserId: id,
+      ...data,
+    }),
   };
 }
 
 // form表单请求Post的options封装
-export function ajaxFormPostOptions(formData: any, header = {}): RequestInit {
+export function ajaxFormPostOptions(
+  formData: any,
+  header: HeadersInit = {}
+): RequestInit {
+  const { token = '', id } = getUserInfo() || {};
   return {
     method: 'POST',
     headers: {
-      ...setHeader(),
-      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: token ? `Bearer ${token}` : '',
+      'starnote-client': `source=pc;version=${configs.version};env=${process.env.NODE_ENV}`,
+      loginNo: String(id),
       ...header,
     },
     // credentials: 'include',

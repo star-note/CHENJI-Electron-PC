@@ -17,7 +17,7 @@ Storage.setNamespace(configs.name);
 //   apiUrl: 'http://localhost:3000/log.gif',
 // });
 
-const container = document.getElementById('root')!;
+const container = document.getElementById('root') as Element;
 const root = createRoot(container);
 root.render(
   <Provider store={store}>

@@ -59,5 +59,13 @@ export const user = createModel<RootModel>()({
         ...(payload.status === 'success' ? { userInfo: payload.data } : null),
       };
     },
+
+    // 设置用户信息
+    setUserInfo(state, userInfo: UserInfo) {
+      return {
+        ...state,
+        userInfo,
+      };
+    },
   },
 });

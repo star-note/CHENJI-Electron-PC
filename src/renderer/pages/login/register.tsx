@@ -34,9 +34,11 @@ const Register = (props: IRegister) => {
     signup({
       params: values,
       apiName: 'signup',
-    }).then(() => {
-      Storage.set('userInfo', userInfo);
-      navigate('/');
+    }).then(data => {
+      if (data && data.token) {
+        Storage.set('userInfo', data);
+        navigate('/notelist');
+      }
     });
   };
   const getVerificationCode = () => {
@@ -145,7 +147,7 @@ const mapStateToProps = ({ user }: RootState) => ({
 });
 const mapDispatchToProps = ({
   user: { signup, verificationCode },
-}: DispatchPro): any => ({
+}: DispatchPro) => ({
   signup,
   verificationCode,
 });
