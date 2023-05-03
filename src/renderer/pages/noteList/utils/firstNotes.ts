@@ -142,3 +142,24 @@ export const findFather = (
   }
   return [result, target];
 };
+
+// 根据targetOptions路径获取最后节点的子节点
+export const getOptionsChildren = (
+  tree: NotesTree,
+  selectedOptions: string[]
+) => {
+  let children;
+  const path = selectedOptions ? [...selectedOptions] : selectedOptions;
+  if (path && Array.isArray(path) && path.length > 0) {
+    if (path.length === 1) {
+      children = tree.filter(node => node.noteId === path[0])[0].childNodes;
+      return children;
+    }
+
+    const _tree = tree.filter(node => node.noteId === path[0]);
+    if (_tree && _tree.length === 1 && _tree[0].childNodes) {
+      path.shift();
+      return getOptionsChildren(_tree[0].childNodes, path);
+    }
+  }
+};

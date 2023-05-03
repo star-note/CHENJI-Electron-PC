@@ -14,6 +14,7 @@ export const apiConfig: { [key: string]: string } = {
   uploadImg: '/images/up', // 上传图片
   deleteNote: '/notes/delete', // 删除个人笔记
   getDeletedNotes: '/notes/getDeleted', // 获取个人被删除笔记，回收站
+  copyMoveNotes: '/notes/copyMove', // 笔记的复制或移动
 
   // 群组 Spaces
   getAllSpaces: '/spaces/getAll', // 查找某用户的所有权限群组

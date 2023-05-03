@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Input, Modal } from 'antd';
+import { useCallback, useEffect } from 'react';
 import store, { DispatchPro } from '@/store';
 import { NoteTree } from './components';
 import { ActiveNote, Note, NotesTree, Space } from './note.interface';
@@ -133,11 +132,13 @@ export const MyRecovery = (props: IMyRecovery) => {
         hasOffical={false}
         dataSource={deletedNotes}
         activeNote={activeNote}
+        isRecovery
       />
       <NoteTree
         hasOffical={false}
         dataSource={deletedSpaceNotes}
         activeNote={activeNote}
+        isRecovery
       />
     </>
   );

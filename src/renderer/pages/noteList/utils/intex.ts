@@ -8,10 +8,8 @@ import { ActiveNote, Note, Space } from '../note.interface';
 import { updateFirstNotes } from './firstNotes';
 
 export const quill: MutableRefObject<any | null> = createRef(); // 编辑器quill实例
-export const lastSaveTime: MutableRefObject<[string, number] | null> =
-  createRef(); // 上一个保存笔记时间，不代表保存成功，为在保存过程中有新增编辑但保存成功后会优先清除编辑态导致点击其他笔记不会触发保存 [type: start/edit, timestamp]
 export const titleInputRef: RefObject<HTMLInputElement> = createRef(); // 编辑器Title Input
-export const editTime: MutableRefObject<Date | null> = createRef(); // 上一次编辑的时间，如果被保存需要清空，被用来标识是否有未保存的笔记
+export const editTime: MutableRefObject<Date | null> = createRef(); // 上一次编辑的时间，如果被保存需要清空，被用来标识是否有未保存的笔记/新增笔记
 
 // 获取某个笔记内容
 export const getNoteById = (
@@ -50,8 +48,8 @@ const createContent = (note: Note | null, spaceId?: Space['spaceId']) => {
   store.dispatch.note.changeState({
     activeNote: child,
     initContent: null,
-    editing: true,
   });
+  editTime.current = new Date();
   if (targetSpaceId !== activeSpace && spaceId !== '-1') {
     store.dispatch.space.changeState({
       activeSpace: targetSpaceId,
@@ -63,8 +61,6 @@ const createContent = (note: Note | null, spaceId?: Space['spaceId']) => {
 export const saveContent = () => {
   const content = quill.current?.getContents();
   const { activeNote = {} as ActiveNote } = store.getState().note;
-  // // 标识是否在保存期间有编辑
-  // lastSaveTime.current = ['start', new Date().getTime()]; // 时间戳暂时没用
   const saveStart = new Date(); // 保存开始时间，用来计算是否在保存期间有编辑
   const { id: userId } = getUserInfo() || {};
 
@@ -86,28 +82,22 @@ export const saveContent = () => {
       apiName,
     })
     .then((data) => {
-      // if (lastSaveTime.current && lastSaveTime.current[0] !== 'edit') {
-      //   store.dispatch.note.changeState({ editing: false });
-      // }
       if (editTime.current && editTime.current < saveStart) {
         editTime.current = null;
       }
       updateFirstNotes(data.note, activeNote.spaceId);
       return data.note; // 发布时用
-    })
-    // .finally(() => {
-    //   lastSaveTime.current = ['end', new Date().getTime()];
-    // });
-};;
+    });
+};
 
 // 当还有未保存笔记内容时的弹框 ·
-const editingSaveConfirm = (
+export const editingSaveConfirm = (
   type: 'save' | 'create', // 是切换笔记还是新建笔记时触发
   note: Note | null // 被点击笔记节点，主要是透传给onNoteClick；新建时为null
 ) => {
-  const { activeNote, editing } = store.getState().note;
+  const { activeNote } = store.getState().note;
   return new Promise<void>(resolve => {
-    if (activeNote && editing && note?.noteId !== activeNote.noteId) {
+    if (activeNote && editTime.current && note?.noteId !== activeNote.noteId) {
       Modal.confirm({
         title: '您还有未保存笔记内容',
         content: '是否保存？',
@@ -117,7 +107,8 @@ const editingSaveConfirm = (
           });
         },
         onCancel() {
-          store.dispatch.note.changeState({ editing: false }); // 不保存说明编辑态取消
+          // store.dispatch.note.changeState({ editing: false }); // 不保存说明编辑态取消
+          editTime.current = null;
           // if (type === 'create') {
           //   // 如之前未保存是新建笔记，上面的跳转可能不起作用，因为新建时URL不变，如正好在新建后点击父节点则URL不变化，新建的笔记也不会消失
           //   if (note && activeNote?.noteId === null) {

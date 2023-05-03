@@ -1,7 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom';
 import LoginPage from './pages/login/index';
 import Layout from './pages/layout';
-// import store from './store';
 import Home from './pages/home';
 import Register from './pages/login/register';
 import NoteList from './pages/noteList';
@@ -11,6 +15,12 @@ export default function App() {
   console.log(location);
   return (
     <Router>
+      {
+        // 给Electron使用的
+        window.location.pathname.includes('index.html') && (
+          <Navigate to="/" replace />
+        )
+      }
       <Routes>
         {/* <Route path="/" element={<Home />} /> */}
         <Route path="/login" element={<LoginPage />} />

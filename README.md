@@ -15,7 +15,7 @@ Demo脱胎于electron-react-puppeteer-demo，render端脱胎于react-rematch-ts�
 
 会把Electron环境启动起来；如果是想开发纯Web的内容，可以在浏览器端打开 http://localhost:1212/ 即为配套开发Web版
 
-打包：npm run package
+打包：yarn run package
 
 ### 开发维护：发布SDK
 

@@ -6,15 +6,12 @@ import { Note } from '../note.interface';
 import { findFather, getUserNotes } from './firstNotes';
 import { deleteContent, titleInputRef } from './intex';
 
-export const useMoreClick = (dataSource, setToggle) => {
+export const useMoreClick = (dataSource, setToggle, copyMoveCallback) => {
   const [position, setPosition] = useState({ top: '0px', left: '0px' }); // 更多菜单的位置
   const [visiable, setVisiable] = useState(false); // 更多菜单是否展示
   const [rightMenuData, setMenuData] = useState<IRightMenu['data'] | null>(
     null
   ); // 更多菜单的数据
-  const [modalData, setModalData] = useState<Record<string, unknown> | null>(
-    null
-  ); // 复制移动笔记Modal弹框数据
 
   const onMoreClick = (note: Note, x: number, y: number, noteToggle) => {
     setVisiable(true);
@@ -90,25 +87,20 @@ export const useMoreClick = (dataSource, setToggle) => {
       {
         title: '群组',
         noteId: 'mySpaces',
+        isLeaf: false, // 给动态loadData使用
         childNodes: store.getState().space.spaceList?.map((space) => ({
           ...space,
+          parentId: 'mySpaces', // 给动态loadData使用
           noteId: space.spaceId,
+          isLeaf: false, // 给动态loadData使用
         })),
       },
     ];
     result[2].handler = () => {
-      setModalData({
-        type: 'copy',
-        from: note,
-        to: target,
-      });
+      copyMoveCallback('copy', note, target);
     };
     result[3].handler = () => {
-      setModalData({
-        type: 'move',
-        from: note,
-        to: target,
-      });
+      copyMoveCallback('move', note, target);
     };
     if (!note || !note.noteId) result[5].disable = true;
     result[5].handler = () => {
@@ -123,5 +115,5 @@ export const useMoreClick = (dataSource, setToggle) => {
     setMenuData(result);
   };
 
-  return [visiable, position, rightMenuData, modalData, onMoreClick];
+  return [visiable, position, rightMenuData, onMoreClick];
 };

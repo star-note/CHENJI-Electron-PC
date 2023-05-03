@@ -7,7 +7,6 @@ import { Note } from '../note.interface';
 
 export interface INoteItem {
   note: Note; // 笔记节点
-  // title?: string | null; // 标题
   onClick?: (note: Note) => void; // 点击回调
   onMoreClick?: (x: number, y: number) => void; // 右键回调
   active?: boolean; // 是否选中态
@@ -28,17 +27,18 @@ export const NoteItem = (props: INoteItem) => {
   } = props;
   const [onNoteClick] = useNoteClick();
 
-  const onItemClick = (e: MouseEvent<HTMLDivElement>) => {
+  const onItemClick = () => {
     const { activeNote } = store.getState().note;
     if (note.noteId !== activeNote?.noteId) {
       onNoteClick(note, note.spaceId);
     }
 
     if (onClick) onClick(note);
-    e.stopPropagation();
+    // e.stopPropagation(); // 加上会导致有rightMenu时点击节点无法使rightMenu消失
   };
   const handlePlusClick = (e: MouseEvent<HTMLDivElement>) => {
     addNewNote(note);
+    if (onClick) onClick(note); // 增加子笔记时，让父笔记节点展开状态
     e.stopPropagation();
   };
   const handleMoreClick = (e: MouseEvent<HTMLDivElement>) => {

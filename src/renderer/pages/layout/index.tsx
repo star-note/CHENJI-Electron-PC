@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Input, InputRef, Menu, Modal, Button } from 'antd';
+import { Input, InputRef, Menu, Modal } from 'antd';
 import {
   HomeOutlined,
   DesktopOutlined,
@@ -177,7 +177,7 @@ const Layout = (props: ILayout) => {
           mode="inline"
           openKeys={openKeys}
           selectedKeys={selectedKeys}
-          onOpenChange={(keys) => {
+          onOpenChange={keys => {
             changeOpenKeys(keys);
             setSelectedKeys([]);
           }}
@@ -261,7 +261,7 @@ const Layout = (props: ILayout) => {
         <Input
           placeholder="输入群组名称"
           value={spaceTitle}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={e => setTitle(e.target.value)}
           ref={spaceTitleRef}
         />
       </Modal>
@@ -270,14 +270,11 @@ const Layout = (props: ILayout) => {
 };
 
 const mapStateToProps = ({ note, space, user, sys }: RootState) => ({
-  saveLoading: note.saveLoading,
   getLoading: note.getLoading,
   activeNote: note.activeNote,
   userNotes: note.userNotes,
   getFirstLoading: note.getFirstLoading,
-  saveStatus: note.saveStatus,
   spaceList: space.spaceList,
-  getLoading: space.getLoading,
   spaceNotes: space.spaceNotes,
   activeSpace: space.activeSpace,
   deletedNotes: note.deletedNotes,
@@ -286,25 +283,15 @@ const mapStateToProps = ({ note, space, user, sys }: RootState) => ({
   openKeys: sys.openKeys,
 });
 const mapDispatchToProps = ({
-  note: { getUserNotes, getDeletedNotes, changeState: changeNoteState },
-  space: {
-    getAllSpace,
-    createSpace,
-    changeState: changeSpaceState,
-    getSpaceNotes,
-    getDeletedSpaceNotes,
-  },
+  note: { getUserNotes },
+  space: { getAllSpace, createSpace, changeState: changeSpaceState },
   user: { setUserInfo },
   sys: { changeOpenKeys },
 }: DispatchPro) => ({
   getUserNotes,
   getAllSpace,
   createSpace,
-  changeNoteState,
   changeSpaceState,
-  getSpaceNotes,
-  getDeletedNotes,
-  getDeletedSpaceNotes,
   setUserInfo,
   changeOpenKeys,
 });

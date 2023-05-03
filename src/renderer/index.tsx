@@ -2,6 +2,8 @@
 // import 'core-js';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/es/locale/zh_CN';
 import store from './store';
 import './index.less';
 import App from './routes';
@@ -20,9 +22,11 @@ Storage.setNamespace(configs.name);
 const container = document.getElementById('root') as Element;
 const root = createRoot(container);
 root.render(
-  <Provider store={store}>
-    <App />
-  </Provider>
+  <ConfigProvider locale={zhCN}>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </ConfigProvider>
 );
 
 // If you want your app to work offline and load faster, you can change

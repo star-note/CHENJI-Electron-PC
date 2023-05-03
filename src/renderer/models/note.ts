@@ -11,7 +11,7 @@ interface INoteState {
   userNotes: null | NotesTree;
   saveStatus: null | string;
   initContent: undefined | string;
-  editing: boolean;
+  // editing: boolean;
   deleteLoading: boolean;
   deletedNotes: Note[] | null;
 }
@@ -24,22 +24,13 @@ export const note = createModel<RootModel>()({
     userNotes: null,
     saveStatus: null,
     initContent: undefined, // 笔记编辑器的初始内容，不能直接使用activeNote，解释详见编辑器使用的地方EditorContainer
-    editing: false, // 笔记是否是在编辑中或者新增中
+    // editing: false, // 笔记是否是在编辑中或者新增中
     deleteLoading: false,
     deletedNotes: null, // 回收站被删除的笔记列表
   } as INoteState, // initial state
   reducers: {
     // 新建笔记
-    createNote(
-      state,
-      payload: {
-        loading: boolean;
-        status: string;
-        data: {
-          note: Note;
-        };
-      }
-    ) {
+    createNote(state, payload: Payload<{ note: Note }>) {
       return {
         ...state,
         saveLoading: payload.loading,
@@ -50,16 +41,7 @@ export const note = createModel<RootModel>()({
       };
     },
     // 保存笔记
-    saveNote(
-      state,
-      payload: {
-        loading: boolean;
-        status: string;
-        data: {
-          note: Note;
-        };
-      }
-    ) {
+    saveNote(state, payload: Payload<{ note: Note }>) {
       return {
         ...state,
         saveLoading: payload.loading,
@@ -70,16 +52,7 @@ export const note = createModel<RootModel>()({
       };
     },
     // 获取笔记内容
-    getNote(
-      state,
-      payload: {
-        loading: boolean;
-        status: string;
-        data: {
-          note: Note;
-        };
-      }
-    ) {
+    getNote(state, payload: Payload<{ note: Note }>) {
       return {
         ...state,
         getLoading: payload.loading,
@@ -147,6 +120,13 @@ export const note = createModel<RootModel>()({
         ...(payload.status === 'success'
           ? { deletedNotes: payload.data.notes }
           : null),
+      };
+    },
+    // 复制或者移动笔记
+    copyMoveNotes(state, payload: Payload<{}>) {
+      return {
+        ...state,
+        copyLoading: payload.loading,
       };
     },
   },

@@ -13,27 +13,15 @@ import {
 import { clickPublish } from '@/electron';
 import Board from '@/pages/publish/board';
 import { ajaxFormPostOptions, apiURL } from '@/configs/api';
-import {
-  editTime,
-  lastSaveTime,
-  quill,
-  saveContent,
-  titleInputRef,
-} from '../utils/intex';
+import { editTime, quill, saveContent, titleInputRef } from '../utils/intex';
 import './editorContainer.less';
 
 type IEditorContainer = ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>;
 
 const EditorContainer = (props: IEditorContainer) => {
-  const {
-    initContent,
-    saveStatus,
-    activeNote,
-    changeState,
-    editing,
-    updateActiveNote,
-  } = props;
+  const { initContent, saveStatus, activeNote, updateActiveNote, saveLoading } =
+    props;
 
   useEffect(() => {
     if (titleInputRef.current) {
@@ -48,23 +36,19 @@ const EditorContainer = (props: IEditorContainer) => {
     quill.current = quillIns;
   };
   const quillChange = (delta, old) => {
-    console.log('quill-change:', delta, old, editing);
-    changeState({ editing: true });
+    console.log('quill-change:', delta, old, editTime.current);
     editTime.current = new Date();
-    // if (lastSaveTime.current && lastSaveTime.current[0] === 'start') {
-    //   lastSaveTime.current[0] = 'edit'; // 保存过程中是否有编辑
-    // }
   };
 
   const onTitleChange = () => {
-    changeState({ editing: true }); // 标题更改也是编辑
+    editTime.current = new Date();
   };
   const onTilteBlur = () => {
     updateActiveNote({ title: titleInputRef.current?.value }); // 失焦再更新active.title
   };
 
   const publishNote = async () => {
-    if (editing || saveStatus === 'failure') {
+    if (editTime.current || saveStatus === 'failure') {
       try {
         const note = await saveContent();
         console.log('发布内容：', note);
@@ -101,21 +85,26 @@ const EditorContainer = (props: IEditorContainer) => {
             {saveStatus === 'failure' ? (
               <Button onClick={() => saveContent()}>重新保存</Button>
             ) : (
-              <Button onClick={() => saveContent()}>保存</Button>
+              <Button loading={saveLoading} onClick={() => saveContent()}>
+                保存
+              </Button>
             )}
             <Button onClick={publishNote}>发布</Button>
           </Space>
         </div>
       </div>
+      {/* <div className="note-label">
+        <p>上次保存于：{}</p>
+      </div> */}
       <RichTextEditor
         modules={{
           table: true,
           codeHighlight: true,
           imageHandler: {
-            imgUploadApi: (formData) =>
+            imgUploadApi: formData =>
               // console.log(apiURL('uploadImg'))
               request(apiURL('uploadImg'), ajaxFormPostOptions(formData)).then(
-                (response) => response.url
+                response => response.url
               ),
             uploadFailCB: () => message.error('图片上传失败'),
           },
@@ -139,13 +128,10 @@ const mapStateToProps = ({ note }: RootState) => ({
   activeNote: note.activeNote,
   saveStatus: note.saveStatus,
   initContent: note.initContent,
-  editing: note.editing,
+  saveLoading: note.saveLoading,
 });
-const mapDispatchToProps = ({
-  note: { updateActiveNote, changeState },
-}: DispatchPro) => ({
+const mapDispatchToProps = ({ note: { updateActiveNote } }: DispatchPro) => ({
   updateActiveNote,
-  changeState,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditorContainer);
