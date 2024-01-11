@@ -10,6 +10,8 @@ import Home from './pages/home';
 import Register from './pages/login/register';
 import NoteList from './pages/noteList';
 import { Blog } from './pages/blog';
+import SearchPage from './pages/search';
+import { SpacePage } from './pages/space';
 
 export default function App() {
   console.log(location);
@@ -31,8 +33,10 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="blog" element={<Blog />} />
           <Route path="notelist" element={<NoteList />} />
+          <Route path="space/:spaceId" element={<SpacePage />} />
         </Route>
         {/* </PrivateRoute> */}
+        <Route path="search/*" element={<SearchPage />} />
       </Routes>
     </Router>
   );

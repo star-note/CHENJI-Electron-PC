@@ -3,7 +3,7 @@ import { apiConfig } from './apiUrl';
 import configs, { Env } from './index';
 
 // 真实环境请求的url
-export function apiURL(type: string) {
+export function apiURL(type: keyof typeof apiConfig) {
   if (apiConfig[type] && apiConfig[type].length > 0 && process.env.NODE_ENV) {
     if (configs.mockWhiteList.indexOf(apiConfig[type]) >= 0) {
       return `${configs.apiServer.mock}${apiConfig[type]}`; // Mock服务器代理

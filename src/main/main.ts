@@ -109,6 +109,7 @@ const createWindow = async () => {
     show: false,
     width: 1400,
     height: 800,
+    title: '辰记笔记',
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -118,6 +119,7 @@ const createWindow = async () => {
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
+  // mainWindow.webContents.openDevTools();
   // 加载发布事件
   mainPublish(mainWindow);
   // 加载其他事件 TODO

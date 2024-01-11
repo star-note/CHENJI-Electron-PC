@@ -1,8 +1,11 @@
 import { useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ConfigProvider, Tree } from 'antd';
 import store, { DispatchPro } from '@/store';
 import { NoteTree } from './components';
 import { ActiveNote, Note, NotesTree, Space } from './note.interface';
 import { useNoteClick } from './utils/intex';
+import { IconButton } from '@/components';
 
 // 我的笔记树
 type IMyNotes = {
@@ -27,11 +30,41 @@ export const MyNotes = (props: IMyNotes) => {
   }, []);
 
   return (
-    <NoteTree
-      hasOffical={hasOffical}
-      dataSource={userNotes}
-      activeNote={activeNote}
-    />
+    <>
+      <NoteTree
+        hasOffical={hasOffical}
+        dataSource={userNotes}
+        activeNote={activeNote}
+      />
+
+      <Tree.DirectoryTree
+        defaultExpandAll
+        draggable={{ icon: false }}
+        blockNode
+        treeData={userNotes}
+        fieldNames={{
+          key: 'noteId',
+          children: 'childNodes',
+        }}
+        switcherIcon={null}
+        rootClassName="note-container"
+        titleRender={(note) => {
+          return (
+            <>
+              <span className="item-title">{note.title || '无标题'}</span>
+              {note.title !== '辰记官方' ? (
+                <div className="handler-zoo">
+                  {note.noteId !== null ? (
+                    <IconButton type="plus" onClick={() => {}} />
+                  ) : null}
+                  <IconButton type="ellipsis" onClick={() => {}} />
+                </div>
+              ) : null}
+            </>
+          );
+        }}
+      />
+    </>
   );
 };
 
@@ -47,6 +80,7 @@ export const MySpaceNotes = (props: IMySpaceNotes) => {
   const { spaceList, activeSpace, spaceNotes, activeNote, userId } = props;
   const [onNoteClick] = useNoteClick();
   const { getSpaceNotes } = (store.dispatch as DispatchPro).space;
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (activeSpace) {
@@ -62,6 +96,7 @@ export const MySpaceNotes = (props: IMySpaceNotes) => {
   const onSpaceTitleClick = (spaceId: Space['spaceId']) => {
     // 当activeSpace不是点击spaceId或者activeNote为个人或者其他群组笔记，则重置activeNote，相当于没有选中任何笔记，只选中了群组
     onNoteClick(null, spaceId); // 在此函数中会改变activeSpace
+    navigate(`/space/${spaceId}`);
   };
 
   return (
@@ -75,7 +110,11 @@ export const MySpaceNotes = (props: IMySpaceNotes) => {
                 }`}
                 onClick={() => onSpaceTitleClick(space.spaceId)}
               >
-                {space.title}
+                {space.title}({space.cnt || 1}人)
+                <div className="handler-zoo">
+                  <IconButton type="plus" />
+                  <IconButton type="ellipsis" />
+                </div>
               </div>
               <NoteTree
                 hasOffical={false}

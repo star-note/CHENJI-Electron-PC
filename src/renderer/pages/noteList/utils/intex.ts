@@ -1,9 +1,9 @@
 /* eslint-disable no-nested-ternary */
 import { createRef, MutableRefObject, RefObject } from 'react';
-import store, { DispatchPro } from '@/store';
 import { Modal } from 'antd';
-import { getUserInfo } from '@/utils';
 import { useNavigate } from 'react-router-dom';
+import store, { DispatchPro } from '@/store';
+import { getUserInfo } from '@/utils';
 import { ActiveNote, Note, Space } from '../note.interface';
 import { updateFirstNotes } from './firstNotes';
 
@@ -58,8 +58,9 @@ const createContent = (note: Note | null, spaceId?: Space['spaceId']) => {
 };
 
 // 保存笔记，在某些新建笔记接口失败的情况下，也充当新建笔记作用
-export const saveContent = () => {
+export const saveContent = (auto = false) => {
   const content = quill.current?.getContents();
+  const text = quill.current?.getText();
   const { activeNote = {} as ActiveNote } = store.getState().note;
   const saveStart = new Date(); // 保存开始时间，用来计算是否在保存期间有编辑
   const { id: userId } = getUserInfo() || {};
@@ -68,6 +69,27 @@ export const saveContent = () => {
   if (activeNote.spaceId) apiName = 'saveSpaceNote';
   else if (activeNote.noteId === null) apiName = 'createNote';
 
+  if (auto) {
+    return (store.dispatch as DispatchPro).note
+      .autoSaveNote({
+        params: {
+          parentId: activeNote.parentId,
+          title: activeNote.title || '无标题',
+          content: JSON.stringify(content),
+          noteId: activeNote.noteId,
+          text,
+          loginUserId: userId,
+          spaceId: activeNote.spaceId, // 保存群组笔记
+          auto,
+        },
+        apiName,
+      })
+      .then(() => {
+        if (editTime.current && editTime.current < saveStart) {
+          editTime.current = null;
+        }
+      });
+  }
   return (store.dispatch as DispatchPro).note
     .saveNote({
       params: {
@@ -75,9 +97,9 @@ export const saveContent = () => {
         title: activeNote.title || '无标题',
         content: JSON.stringify(content),
         noteId: activeNote.noteId,
+        text,
         loginUserId: userId,
         spaceId: activeNote.spaceId, // 保存群组笔记
-        // loginUserName: activeNote.spaceId ? name : undefined, // 群组笔记需要记录唯一ID
       },
       apiName,
     })
@@ -96,7 +118,7 @@ export const editingSaveConfirm = (
   note: Note | null // 被点击笔记节点，主要是透传给onNoteClick；新建时为null
 ) => {
   const { activeNote } = store.getState().note;
-  return new Promise<void>(resolve => {
+  return new Promise<void>((resolve) => {
     if (activeNote && editTime.current && note?.noteId !== activeNote.noteId) {
       Modal.confirm({
         title: '您还有未保存笔记内容',
@@ -138,14 +160,17 @@ export const useNoteClick = () => {
     editingSaveConfirm('save', note).then(() => {
       // 相同笔记点击就不要操作了
       if (!(activeNote && note && note.noteId === activeNote.noteId)) {
-        // 先拿参数的数据显示在树上，防止出现点击左侧在接口很慢的情况下，在切换Note时需要等接口返回更新activeNote才会变更左侧树和右侧内容
-        store.dispatch.note.changeState({
-          activeNote: {
-            ...note,
-            spaceId,
-          },
-          initContent: note && note.content ? JSON.parse(note.content) : null, // 要把内容更新到富文本，只更新activeNote不生效
-        });
+        // 点击的是笔记才更新，防止点击群名导致activeNote更新
+        if (note) {
+          // 先拿参数的数据显示在树上，防止出现点击左侧在接口很慢的情况下，在切换Note时需要等接口返回更新activeNote才会变更左侧树和右侧内容
+          store.dispatch.note.changeState({
+            activeNote: {
+              ...note,
+              spaceId,
+            },
+            initContent: note && note.content ? JSON.parse(note.content) : null, // 要把内容更新到富文本，只更新activeNote不生效
+          });
+        }
 
         // 当点击群组笔记，更新activeSpace；其他时候不更改ctiveSpace，不收起当前群组笔记树
         if (spaceId && spaceId !== activeSpace) {
@@ -202,4 +227,11 @@ export const deleteContent = (note: Note) => {
     });
     if (titleInputRef.current) titleInputRef.current.value = '';
   }
+};
+
+// 获取笔记的图片列表，默认只返回一张
+export const getImgFromContent = (content: string, one = true) => {
+  const imgReg = /https?:\/\/.*?\.(?:png|jpg|jpeg|gif)/gi;
+  const matches = content.match(imgReg);
+  return one && matches && matches.length > 0 ? matches[0] : matches;
 };

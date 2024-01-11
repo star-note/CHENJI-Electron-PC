@@ -82,3 +82,22 @@ export function stringSort(a: string, b: string) {
   if (a < b) return -1;
   return 0;
 }
+
+// 匹配URL地址，含协议
+export function isUrl(url: string) {
+  return /(?:(https?):\/\/)[\w\-]+(\.[\w\-]+)+([\w\-.,@?^=%&:\/~+#]*[\w\-@?^=%&\/~+#])?$/.test(
+    url
+  );
+}
+
+export const addScript = (url: string): Promise<void> => {
+  return new Promise<void>(resolve => {
+    const script = document.createElement('script');
+    script.type = 'application/javascript';
+    script.src = url;
+    document.head.appendChild(script);
+    script.onload = () => {
+      resolve();
+    };
+  });
+};

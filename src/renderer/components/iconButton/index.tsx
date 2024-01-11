@@ -5,26 +5,44 @@ import {
   PlusOutlined,
   EllipsisOutlined,
   LoadingOutlined,
+  SearchOutlined,
+  StarOutlined,
+  LikeOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 import './index.less';
 
 type IIconButton = {
-  type: 'plus' | 'ellipsis' | 'down' | 'up' | 'loading';
+  type:
+    | 'plus'
+    | 'ellipsis'
+    | 'down'
+    | 'up'
+    | 'loading'
+    | 'search'
+    | 'star'
+    | 'like'
+    | 'message';
   style?: CSSProperties;
   onClick?: (e: MouseEvent<HTMLDivElement>) => void;
+  className?: string;
 };
 export const IconButton = (props: IIconButton) => {
-  const { type, style, onClick } = props;
+  const { type, style, onClick, className } = props;
   const icons = {
     plus: <PlusOutlined />,
     ellipsis: <EllipsisOutlined />,
     down: <DownOutlined />,
     up: <UpOutlined />,
     loading: <LoadingOutlined />,
+    search: <SearchOutlined />,
+    star: <StarOutlined />,
+    like: <LikeOutlined />,
+    message: <MessageOutlined />,
   };
   return (
     <div
-      className={`icon-button flex-center ${type}`}
+      className={`icon-button flex-center ${className}`}
       style={style}
       onClick={onClick}
     >

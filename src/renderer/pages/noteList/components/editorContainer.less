@@ -1,52 +1,117 @@
+@import '../../../global.less';
+
 .editor-container {
   flex: 1;
   display: flex;
   flex-direction: column;
 
   .content-container {
-    min-height: calc(100vh - 48px);
     display: flex;
     flex-direction: column;
     padding-bottom: 60px;
   }
 
-  .note-title {
+  .editor-header {
     display: flex;
     flex-direction: row;
-    input {
-      outline: none;
-      background: none;
-      border: none;
-      font-size: 18px;
-      width: 100%;
-      box-sizing: border-box;
-      padding: 8px 15px;
+    justify-content: center;
+    position: sticky;
+    height: 60px;
+    top: 0;
+    background-color: #fff;
+    z-index: 11;
+
+    .note-title {
+      display: flex;
+      flex-direction: column;
+      // height: 44px;
+      flex: 1;
+      input {
+        outline: none;
+        background: none;
+        border: none;
+        font-size: 24px;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px 6px;
+      }
     }
-    .button-list {
-      height: 48px;
+    .note-desc {
       display: flex;
       align-items: center;
-      padding-right: 24px;
+      padding-left: 12px;
+      font-size: 12px;
+      color: @grey99;
+      .desc-item:not(:last-child) {
+        padding-right: 6px;
+        border-right: 1px solid @hr-color;
+      }
+      .desc-item:last-child:not(:first-child) {
+        padding-left: 6px;
+      }
+      .avator-container {
+        padding-right: 6px;
+      }
+    }
+    .button-list {
+      display: flex;
+      align-items: center;
+      margin: 0 24px;
+    }
+
+    .search-bar {
+      .ant-btn.ant-input-search-button {
+        border: 0;
+        box-shadow: none;
+        border-start-end-radius: 16px;
+        border-end-end-radius: 16px;
+        transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+      }
+      .ant-input-group-addon {
+        background-color: #fff;
+      }
+      input {
+        border: 0;
+        padding: 0;
+        width: 0;
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+         box-shadow: none;
+        transition: width 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+      }
+    }
+    .search-toggle, .search-bar:hover {
+      .ant-btn.ant-input-search-button {
+        border: 1px solid @primary-color;
+        border-left: 0;
+        box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
+      }
+      input {
+        width: 178px;
+        padding: 4px 11px;
+        border: 1px solid @primary-color;
+        display: table-cell;
+      }
     }
   }
 
   // 对编辑器css自定义
-  .ql-toolbar.ql-snow {
+  .ql-editor-container {
+    min-height: calc(100vh - 112px);
+  }
+  div.ql-toolbar.ql-snow {
     border-left: 0;
     border-right: 0;
     position: sticky;
-    top: 0;
-    z-index: 1;
+    top: 60px;
+    z-index: 11;
     background-color: #fff;
   }
   .ql-container.ql-snow {
     border: 0;
   }
-  // .ql-editor ol {
-  //   padding-left: 0;
+}
 
-  // }
-  // .ql-container .ql-tooltip.ql-editing a.ql-preview {
-  //   margin-left: 16px;
-  // }
+.note-more-menu {
+  border: 0 !important;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Input, InputRef, Menu, Modal } from 'antd';
 import {
   HomeOutlined,
@@ -30,10 +30,11 @@ const Layout = (props: ILayout) => {
     spaceList,
     activeSpace,
     spaceNotes,
-    userInfo,
+    userInfo = {},
     setUserInfo,
     getUserNotes,
     getAllSpace,
+    changeState,
     changeSpaceState,
     openKeys,
     changeOpenKeys,
@@ -47,6 +48,7 @@ const Layout = (props: ILayout) => {
   const [isAddSpaceModalShow, setModalShow] = useState(false); // 新增群组的Modal
   const [spaceTitle, setTitle] = useState(''); // 新增群组的Title
   const spaceTitleRef = useRef<InputRef>(null);
+  const location = useLocation(); // 用于监听location change
 
   // 控制侧边栏拖动改变宽度
   const dragListener = (delay: number) => {
@@ -98,30 +100,57 @@ const Layout = (props: ILayout) => {
       apiName: 'getAllSpaces',
     });
 
-    // 页面刷新处理选择的菜单和打开的菜单
-    const path = window.location.pathname;
+    // // 页面刷新处理选择的菜单和打开的菜单
+    // const path = window.location.pathname;
+
+    // // note为目标noteId或者新增笔记时的父节点，space为目标spaceId，create表示是否新建笔记1/0
+    // const { note, space } = parseUrlParams(window.location.href);
+    // if (path === '/') {
+    //   setSelectedKeys(['home']);
+    //   changeOpenKeys([]);
+    // } else if (path === '/blog') {
+    //   setSelectedKeys(['blog']);
+    //   changeOpenKeys([]);
+    // } else if (path.startsWith('/notelist') && space) {
+    //   setSelectedKeys([]);
+    //   changeOpenKeys(['spaces']);
+    //   changeSpaceState({
+    //     activeSpace: space,
+    //   }); // 在群组组件中监听activeSpace会请求该space的笔记内容
+    // } else if (path.startsWith('/notelist') && !space) {
+    //   setSelectedKeys([]);
+    //   changeOpenKeys(['myNote']);
+    // }
+
+    dragListener(30);
+  }, []);
+
+  useEffect(() => {
+    const { pathname } = location;
 
     // note为目标noteId或者新增笔记时的父节点，space为目标spaceId，create表示是否新建笔记1/0
     const { note, space } = parseUrlParams(window.location.href);
-    if (path === '/') {
+    if (pathname === '/') {
       setSelectedKeys(['home']);
-      changeOpenKeys([]);
-    } else if (path === '/blog') {
+      changeState({
+        activeNote: null,
+      });
+    } else if (pathname === '/blog') {
       setSelectedKeys(['blog']);
-      changeOpenKeys([]);
-    } else if (path.startsWith('/notelist') && space) {
+      changeState({
+        activeNote: null,
+      });
+    } else if (pathname.startsWith('/notelist') && space) {
       setSelectedKeys([]);
       changeOpenKeys(['spaces']);
       changeSpaceState({
         activeSpace: space,
       }); // 在群组组件中监听activeSpace会请求该space的笔记内容
-    } else if (path.startsWith('/notelist') && !space) {
+    } else if (pathname.startsWith('/notelist') && !space) {
       setSelectedKeys([]);
       changeOpenKeys(['myNote']);
     }
-
-    dragListener(30);
-  }, []);
+  }, [location]);
 
   // 左侧菜单树的选择跳转
   const onSelect = ({
@@ -134,6 +163,7 @@ const Layout = (props: ILayout) => {
     const urlMapping = {
       home: '/',
       blog: '/blog',
+      material: '/material',
     } as Record<string, string>;
     setSelectedKeys(keys);
     navigate(urlMapping[key]);
@@ -166,9 +196,11 @@ const Layout = (props: ILayout) => {
   return (
     <div className="main-layout">
       <div
-        className={`first-slider ${collapsed ? 'first-slider-collapsed' : ''}`}
+        className={`scroller first-slider ${
+          collapsed ? 'first-slider-collapsed' : ''
+        }`}
       >
-        <div className="logo">正心笔记</div>
+        <div className="logo">辰记</div>
         <div onClick={toggleCollapsed} className="slider-collapse">
           {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         </div>
@@ -177,9 +209,9 @@ const Layout = (props: ILayout) => {
           mode="inline"
           openKeys={openKeys}
           selectedKeys={selectedKeys}
-          onOpenChange={keys => {
+          onOpenChange={(keys) => {
             changeOpenKeys(keys);
-            setSelectedKeys([]);
+            // setSelectedKeys([]);
           }}
           onSelect={onSelect}
           inlineCollapsed={collapsed}
@@ -189,6 +221,9 @@ const Layout = (props: ILayout) => {
           </Menu.Item>
           <Menu.Item key="blog" icon={<DesktopOutlined />}>
             我的博客
+          </Menu.Item>
+          <Menu.Item key="material" icon={<DesktopOutlined />}>
+            素材库
           </Menu.Item>
           <Menu.SubMenu
             key="myNote"
@@ -261,7 +296,7 @@ const Layout = (props: ILayout) => {
         <Input
           placeholder="输入群组名称"
           value={spaceTitle}
-          onChange={e => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           ref={spaceTitleRef}
         />
       </Modal>
@@ -283,7 +318,7 @@ const mapStateToProps = ({ note, space, user, sys }: RootState) => ({
   openKeys: sys.openKeys,
 });
 const mapDispatchToProps = ({
-  note: { getUserNotes },
+  note: { getUserNotes, changeState },
   space: { getAllSpace, createSpace, changeState: changeSpaceState },
   user: { setUserInfo },
   sys: { changeOpenKeys },
@@ -291,6 +326,7 @@ const mapDispatchToProps = ({
   getUserNotes,
   getAllSpace,
   createSpace,
+  changeState,
   changeSpaceState,
   setUserInfo,
   changeOpenKeys,

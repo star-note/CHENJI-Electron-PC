@@ -4,6 +4,7 @@ import { Form, Button, Input } from 'antd';
 import { DispatchPro, RootState } from '@/store';
 import Storage from '@/utils/Storage';
 import './index.less';
+import md5 from 'md5';
 
 type IRegister = ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>;
@@ -32,7 +33,7 @@ const Register = (props: IRegister) => {
     email: string;
   }) => {
     signup({
-      params: values,
+      params: { ...values, password: md5(values.password) },
       apiName: 'signup',
     }).then(data => {
       if (data && data.token) {

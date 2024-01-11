@@ -1,4 +1,4 @@
-export const apiConfig: { [key: string]: string } = {
+export const apiConfig = {
   // 登录
   verificationCode: '/v1/users/verification/code', // 生成验证码
   signup: '/user/sign', // 注册
@@ -24,4 +24,7 @@ export const apiConfig: { [key: string]: string } = {
   saveSpaceNote: '/spaces/saveNote', // 保存或新建群组笔记
   deleteSpaceNote: '/spaces/deleteNote', // 删除群组笔记
   getDeletedSpaceNotes: '/spaces/getDeletedNotes', // 获取群组中被本人删除笔记，回收站
+
+  // 搜索
+  search: '/search/all', // 笔记搜索
 };

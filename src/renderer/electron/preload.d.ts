@@ -10,9 +10,11 @@ declare global {
           func: (...args: unknown[]) => void
         ): (() => void) | undefined;
         once(channel: string, func: (...args: unknown[]) => void): void;
-        publish(options: Record<string, unknown>): void;
-        clickPublish(): any;
-        onProcess(callback: (event, value)=> void): any;
+        elecPublish(
+          options: string // 该 publish 函数所需要的参数
+        ): void;
+        // clickPublish(): any;
+        onProcess(callback: (event, value) => void): any;
       };
     };
   }

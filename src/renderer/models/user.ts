@@ -1,62 +1,46 @@
 import { createModel } from '@rematch/core';
 import { RootModel } from '.';
 import { UserInfo } from '../utils/userInfo';
+import { Payload } from '@/middleware/wrapperRequest';
 
+interface State {
+  isAuth: boolean;
+  codeLoading: boolean;
+  signupLoading: boolean;
+  loginLoading: boolean;
+  userInfo: null | UserInfo;
+  code: string;
+}
 export const user = createModel<RootModel>()({
-  state: {
-    isAuth: false,
-    codeLoading: false,
-    signupLoading: false,
-    loginLoading: false,
-    userInfo: {} as UserInfo,
-    code: '',
-  }, // initial state
+  state: {} as State, // initial state
   reducers: {
     // 发送验证码
     verificationCode(
       state,
-      payload: {
-        loading: boolean;
-        status: string;
-        data: {
-          code: string;
-        };
-      }
+      payload: Payload<{
+        code: string;
+      }>
     ) {
       return {
         ...state,
         codeLoading: payload.loading,
-        ...(payload.status === 'success' ? { code: payload.data.code } : null),
+        code: payload.status === 'success' ? payload.data.code : '',
       };
     },
     // 注册
-    signup(
-      state,
-      payload: {
-        loading: boolean;
-        status: string;
-        data: UserInfo;
-      }
-    ) {
+    signup(state, payload: Payload<UserInfo>) {
       return {
         ...state,
         signupLoading: payload.loading,
-        ...(payload.status === 'success' ? { userInfo: payload.data } : null),
+        userInfo: payload.status === 'success' ? payload.data : null,
       };
     },
     // 登录
-    login(
-      state,
-      payload: {
-        loading: boolean;
-        status: string;
-        data: UserInfo;
-      }
-    ) {
+    login(state, payload: Payload<UserInfo>) {
       return {
         ...state,
         loginLoading: payload.loading,
-        ...(payload.status === 'success' ? { userInfo: payload.data } : null),
+        userInfo: payload.status === 'success' ? payload.data : null,
       };
     },
 
@@ -65,6 +49,14 @@ export const user = createModel<RootModel>()({
       return {
         ...state,
         userInfo,
+      };
+    },
+
+    // 登出
+    logout(state) {
+      return {
+        ...state,
+        userInfo: null,
       };
     },
   },

@@ -15,9 +15,20 @@ export type NotesTree = Note[];
 export interface ActiveNote {
   noteId: string | null;
   parentId?: string;
+  userId?: string;
+  userName?: string;
+  avatarUrl?: string;
   title?: string | null;
   content?: string;
   spaceId?: string;
+  createTime?: string;
+  modifyTime?: string;
+  creator?: string;
+  modifier?: string;
+  creatorName?: string;
+  creatorAvator?: string;
+  modifierName?: string;
+  modifierAvator?: string;
 }
 
 export interface Space {
@@ -29,4 +40,5 @@ export interface Space {
   title: string;
   createTime?: string;
   modifyTime?: string;
+  cnt?: number;
 }

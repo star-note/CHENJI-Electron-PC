@@ -10,16 +10,22 @@ const configs = {
   apiServer: {
     local: 'http://localhost:8001',
     development: 'http://localhost:8001',
-    production: 'http://10.66.14.30:8001',
+    production: 'http://66.42.124.73:8001',
     mock: '',
   } as Record<Env, string>, // API请求各环境的Domain配置
   staticUrl: {
     local: '',
     development: '',
-    production: 'http://10.66.14.30:8001',
+    production: 'http://66.42.124.73:8001',
     mock: '',
   } as Record<Env, string>,
   mockWhiteList: [] as string[], // 后端Mock Server的白名单，在白名单中可走Mock服务器，不然还是走DEV服务器
+  publishInfo: {
+    homeUrl: '',
+    logo: '',
+    desc: '',
+    title: '辰记',
+  },
 };
 
 export default configs;

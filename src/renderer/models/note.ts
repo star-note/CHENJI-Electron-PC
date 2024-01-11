@@ -30,29 +30,27 @@ export const note = createModel<RootModel>()({
   } as INoteState, // initial state
   reducers: {
     // 新建笔记
-    createNote(state, payload: Payload<{ note: Note }>) {
+    createNote(state, payload: Payload<{ note: ActiveNote }>) {
       return {
         ...state,
         saveLoading: payload.loading,
         saveStatus: payload.status,
-        ...(payload.status === 'success'
-          ? { activeNote: payload.data.note }
-          : null),
+        activeNote:
+          payload.status === 'success' ? payload.data.note : undefined,
       };
     },
     // 保存笔记
-    saveNote(state, payload: Payload<{ note: Note }>) {
+    saveNote(state, payload: Payload<{ note: ActiveNote }>) {
       return {
         ...state,
         saveLoading: payload.loading,
         saveStatus: payload.status,
-        ...(payload.status === 'success'
-          ? { activeNote: payload.data.note }
-          : null),
+        activeNote:
+          payload.status === 'success' ? payload.data.note : undefined,
       };
     },
     // 获取笔记内容
-    getNote(state, payload: Payload<{ note: Note }>) {
+    getNote(state, payload: Payload<{ note: ActiveNote }>) {
       return {
         ...state,
         getLoading: payload.loading,
@@ -123,10 +121,17 @@ export const note = createModel<RootModel>()({
       };
     },
     // 复制或者移动笔记
-    copyMoveNotes(state, payload: Payload<{}>) {
+    copyMoveNotes(state, payload: Payload<any>) {
       return {
         ...state,
         copyLoading: payload.loading,
+      };
+    },
+    // 自动保存笔记：追求快，只是要将数据保存，可以有loading展示，但不要其他渲染，特别不要更新activeNote；也不返回任何数据
+    autoSaveNote(state, payload: Payload<any>) {
+      return {
+        ...state,
+        saveLoading: payload.loading,
       };
     },
   },

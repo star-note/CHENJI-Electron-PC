@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'ipc-example' | 'publish' | 'post-process';
+export type Channels = 'ipc-example' | 'elecPublish' | 'publish:post-process';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('electron', {
     on(channel: Channels, func: (...args: unknown[]) => void) {
       const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
         func(...args);
+      console.log(7777, channel, func);
       ipcRenderer.on(channel, subscription);
 
       return () => ipcRenderer.removeListener(channel, subscription);
@@ -17,14 +18,11 @@ contextBridge.exposeInMainWorld('electron', {
     once(channel: Channels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
-    publish(options: Record<string, unknown>) {
-      return ipcRenderer.send('publish', options);
+    elecPublish(payload: string) {
+      return ipcRenderer.send('elecPublish', payload);
     },
-    clickPublish() {
-      return ipcRenderer.invoke('clickPublish');
-    },
-    onProcess(callback) {
-      return ipcRenderer.on('post-process', callback);
-    },
+    // onProcess(callback) {
+    //   return ipcRenderer.on('post-process', callback);
+    // },
   },
 });

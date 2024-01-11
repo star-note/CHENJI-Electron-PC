@@ -1,6 +1,7 @@
-@import '../../../index.less';
+@import '../../../global.less';
 
 .note-container {
+  color: @primary-color;
   .note-item {
     height: 40px;
     line-height: 40px;
@@ -11,18 +12,8 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .handler-zoo {
-      position: absolute;
-      right: 4px;
-      top: 10px;
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-      display: flex;
-      >div {
-        margin-left: 4px;
-      }
-    }
   }
+
   .note-item-hide {
     display: none;
   }
@@ -54,6 +45,50 @@
   }
 }
 
-.ant-cascader.target-cascader {
-    width: 100%;
+.note-container .note-item .handler-zoo,
+.space-name .handler-zoo {
+  position: absolute;
+  right: 4px;
+  top: 10px;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+  display: flex;
+  > div {
+    margin-left: 4px;
   }
+}
+.space-name:hover .handler-zoo,
+.space-name-active .handler-zoo {
+  opacity: 1;
+}
+
+.ant-cascader.target-cascader {
+  width: 100%;
+}
+
+// .note-container.ant-tree-directory {
+//   .ant-tree-list {
+//     .ant-tree-treenode-selected::before {
+//       background-color: @menu-bg;
+//     }
+//     // .ant-tree-treenode::before {
+//     //   bottom: 0;
+//     // }
+//     // .ant-tree-treenode {
+//     //   padding: 0;
+//     // }
+//   }
+// }
+
+.note-container {
+  .ant-tree-node-content-wrapper {
+    overflow: hidden;
+    display: flex;
+
+    .ant-tree-title {
+      display: inline-block;
+      height: 40px;
+      flex: 1;
+    }
+  }
+}

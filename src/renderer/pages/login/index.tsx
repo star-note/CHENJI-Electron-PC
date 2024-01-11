@@ -1,8 +1,7 @@
-import * as React from 'react';
 import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Input, Checkbox } from 'antd';
-
+import md5 from 'md5';
 import { DispatchPro, RootState } from '@/store';
 import { setUserInfo, UserInfo } from '@/utils';
 import './index.less';
@@ -21,7 +20,10 @@ const Login: React.FC<ILogin> = props => {
     remember: boolean;
   }) => {
     login({
-      params: values,
+      params: {
+        mobile: values.mobile,
+        password: md5(values.password),
+      },
       apiName: 'sign',
     }).then(userInfo => {
       if (userInfo?.token) {
