@@ -1,6 +1,7 @@
 import { createModel } from '@rematch/core';
 import { ActiveNote, Note, NotesTree } from '@/pages/noteList/note.interface';
 import { Payload } from '@/middleware/wrapperRequest';
+import Storage from '@/utils/Storage';
 import { RootModel } from '.';
 
 interface INoteState {
@@ -11,9 +12,9 @@ interface INoteState {
   userNotes: null | NotesTree;
   saveStatus: null | string;
   initContent: undefined | string;
-  // editing: boolean;
   deleteLoading: boolean;
   deletedNotes: Note[] | null;
+  resumeLoading: boolean;
 }
 export const note = createModel<RootModel>()({
   state: {
@@ -24,21 +25,10 @@ export const note = createModel<RootModel>()({
     userNotes: null,
     saveStatus: null,
     initContent: undefined, // 笔记编辑器的初始内容，不能直接使用activeNote，解释详见编辑器使用的地方EditorContainer
-    // editing: false, // 笔记是否是在编辑中或者新增中
     deleteLoading: false,
     deletedNotes: null, // 回收站被删除的笔记列表
   } as INoteState, // initial state
   reducers: {
-    // 新建笔记
-    createNote(state, payload: Payload<{ note: ActiveNote }>) {
-      return {
-        ...state,
-        saveLoading: payload.loading,
-        saveStatus: payload.status,
-        activeNote:
-          payload.status === 'success' ? payload.data.note : undefined,
-      };
-    },
     // 保存笔记
     saveNote(state, payload: Payload<{ note: ActiveNote }>) {
       return {
@@ -46,7 +36,7 @@ export const note = createModel<RootModel>()({
         saveLoading: payload.loading,
         saveStatus: payload.status,
         activeNote:
-          payload.status === 'success' ? payload.data.note : undefined,
+          payload.status === 'success' ? payload.data.note : state.activeNote,
       };
     },
     // 获取笔记内容
@@ -57,40 +47,29 @@ export const note = createModel<RootModel>()({
         ...(payload.status === 'success'
           ? {
               activeNote: payload.data.note,
-              initContent: payload.data.note.content
-                ? JSON.parse(payload.data.note.content)
+              initContent: payload.data.note?.content
+                ? JSON.parse(payload.data.note?.content)
                 : null,
             }
           : null),
       };
     },
     // 获取第一列笔记树
-    getUserNotes(
+    fetchUserNotes(
       state,
       payload: Payload<{
         notes: NotesTree;
       }>
     ) {
+      if (payload.status === 'success')
+        Storage.set('userNotes', payload.data.notes);
       return {
         ...state,
         getFirstLoading: payload.loading,
-        ...(payload.status === 'success'
-          ? { userNotes: payload.data.notes }
-          : null),
+        userNotes: payload.status === 'success' ? payload.data.notes : null,
       };
     },
 
-    // 前端先新增笔记，保存在内存中，不妨碍createNote接口，但是加快用户体验，需要和createNote接口返回值进行融合
-    updateActiveNote(state, payload) {
-      const activeNote = {
-        ...(state.activeNote || {}),
-        ...payload,
-      };
-      return {
-        ...state,
-        activeNote,
-      };
-    },
     // 更新状态
     changeState(state, payload) {
       return {
@@ -100,13 +79,14 @@ export const note = createModel<RootModel>()({
     },
 
     // 删除笔记
-    deleteNote(state, payload: Payload<{ notes: NotesTree }>) {
+    deleteNote(state, payload: Payload<{ userNotes: NotesTree, deleteNotes: NotesTree }>) {
       return {
         ...state,
         deleteLoading: payload.loading,
         ...(payload.status === 'success'
           ? {
-              userNotes: payload.data.notes,
+              userNotes: payload.data.userNotes,
+              deletedNotes: payload.data.deleteNotes,
             }
           : null),
       };
@@ -132,6 +112,15 @@ export const note = createModel<RootModel>()({
       return {
         ...state,
         saveLoading: payload.loading,
+      };
+    },
+    // 恢复笔记
+    resumeNotes(state, payload: Payload<{ notes: NotesTree }>) {
+      return {
+        ...state,
+        resumeLoading: payload.loading,
+        userNotes:
+          payload.status === 'success' ? payload.data.notes : state.userNotes,
       };
     },
   },

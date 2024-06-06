@@ -32,7 +32,13 @@ export const removeFirstNotes = () => {
 };
 
 // 更新或新增FirstNotes树中某一个note的信息：note为需要新增或修改的笔记节点，note不应含childNodes
-export const updateFirstNotes = (note: Note, spaceId: string | null = null) => {
+// replaceId表示需要替换的id；isDelete表示直接删除树上的note.noteId节点
+export const updateFirstNotes = (
+  note: Note,
+  spaceId: string | null = null,
+  replaceId?: string,
+  isDelete = false
+) => {
   let firstNotes: NotesTree = [];
   if (spaceId) {
     const spaceNotes = getSpaceNotes();
@@ -42,57 +48,63 @@ export const updateFirstNotes = (note: Note, spaceId: string | null = null) => {
   }
   const { parentId, noteId } = note;
 
-  const findIdList = (
-    list: NotesTree,
-    _parentId: string | null | undefined,
-    _noteId: string | null
-  ) => {
-    if (_parentId === null || _parentId === undefined) {
-      // 无parentId时，顶级新增编辑
-      let isCreate = true; // 是否存在此noteId
-      for (let i = 0; i < list.length; i += 1) {
-        if (list[i].noteId === _noteId) {
-          isCreate = false;
-          list[i] = {
-            ...list[i],
-            ...note,
-          };
-          break;
-        }
-      }
-      if (isCreate) {
-        list.push(note);
-      }
-    } else {
-      // 有parentId时，递归找到哪级新增/编辑
-      for (let i = 0; i < list.length; i += 1) {
-        if (
-          list[i].noteId === _parentId &&
-          list[i].childNodes &&
-          // @ts-ignore
-          list[i].childNodes.length > 0
-        ) {
-          // 当找到parentId，并且此节点有childNodes，在此节点下递归，parentId为null
-          // @ts-ignore
-          findIdList(list[i].childNodes, null, _noteId);
-          break;
-        } else if (list[i].noteId === _parentId) {
-          // 当找到parentId，并且此节点无childNodes，代表新增
-          list[i].childNodes = [note];
-          break;
-        } else if (list[i].childNodes) {
-          // 当没有找到parentId，接着往下层递归
-          // @ts-ignore
-          findIdList(list[i].childNodes, _parentId, _noteId);
-        }
-      }
-    }
-  };
-
-  if (firstNotes) {
-    findIdList(firstNotes, parentId, noteId);
+  if (isDelete) {
+    firstNotes = deleteTreeData(firstNotes, note.noteId);
   } else {
-    console.log('更新FirstNotes失败，未发现：', firstNotes, spaceId);
+    const findIdList = (
+      list: NotesTree,
+      _parentId: string | null | undefined,
+      _noteId: string | null
+    ) => {
+      if (_parentId === null || _parentId === undefined) {
+        // 无parentId时，顶级新增编辑
+        let isCreate = true; // 是否存在此noteId
+        for (let i = 0; i < list.length; i += 1) {
+          if (list[i].noteId === _noteId) {
+            isCreate = false;
+            list[i] = {
+              ...list[i],
+              ...note,
+            };
+          }
+          break;
+        }
+
+        if (isCreate) {
+          list.push(note);
+        }
+      } else {
+        // 有parentId时，递归找到哪级新增/编辑
+        for (let i = 0; i < list.length; i += 1) {
+          if (
+            list[i].noteId === _parentId &&
+            list[i].childNodes &&
+            // @ts-ignore
+            list[i].childNodes.length > 0
+          ) {
+            // 当找到parentId，并且此节点有childNodes，在此节点下递归，parentId为null
+            // @ts-ignore
+            findIdList(list[i].childNodes, null, _noteId);
+            break;
+          } else if (list[i].noteId === _parentId) {
+            // 当找到parentId，并且此节点无childNodes，代表新增
+            list[i].childNodes = [note];
+            list[i].isLeaf = false;
+            break;
+          } else if (list[i].childNodes) {
+            // 当没有找到parentId，接着往下层递归
+            // @ts-ignore
+            findIdList(list[i].childNodes, _parentId, _noteId);
+          }
+        }
+      }
+    };
+
+    if (firstNotes) {
+      findIdList(firstNotes, parentId, replaceId || noteId);
+    } else {
+      console.log('更新FirstNotes失败，未发现：', firstNotes, spaceId);
+    }
   }
 
   // 替换store
@@ -100,7 +112,7 @@ export const updateFirstNotes = (note: Note, spaceId: string | null = null) => {
     store.dispatch.space.changeState({
       spaceNotes: {
         ...store.getState().space.spaceNotes,
-        [spaceId]: firstNotes,
+        [spaceId]: firstNotes.concat([]),
       },
     });
   } else {
@@ -162,4 +174,42 @@ export const getOptionsChildren = (
       return getOptionsChildren(_tree[0].childNodes, path);
     }
   }
+};
+
+// 根据ID找到某个树中一个节点
+export const findNodeById = (noteList: NotesTree, noteId: Note['noteId']) => {
+  let target: Note;
+  if (noteId && noteList && noteList.length > 0) {
+    const find = (tree, id) => {
+      if (tree && tree.length > 0) {
+        for (let i = 0; i < tree.length; i++) {
+          const item = tree[i];
+          if (item.noteId === id) {
+            target = item;
+            break;
+          } else if (item.childNodes) {
+            find(item.childNodes, id);
+          }
+        }
+      }
+    };
+    find(noteList, noteId);
+  }
+
+  return target;
+};
+
+// 删除树上某个节点：主要用于删除新增节点，
+export const deleteTreeData = (list: NotesTree, noteId: Note['noteId']) => {
+  return list.filter(note => {
+    if (note && note.noteId === noteId) {
+      return false;
+    }
+
+    if (note.childNodes && note.childNodes.length > 0) {
+      note.childNodes = deleteTreeData(note.childNodes, noteId);
+    }
+
+    return true;
+  });
 };

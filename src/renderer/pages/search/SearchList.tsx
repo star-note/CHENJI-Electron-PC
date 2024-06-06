@@ -3,7 +3,7 @@ import Highlighter from 'react-highlight-words';
 import dayjs from 'dayjs';
 import { LikeOutlined, MessageOutlined, StarOutlined } from '@ant-design/icons';
 import { IconButton } from '@/components';
-import { getImgFromContent } from '../noteList/utils/intex';
+import { getImgFromContent } from '../noteList/utils';
 import Avatar from '../components/avatar';
 
 export const SearchList = props => {

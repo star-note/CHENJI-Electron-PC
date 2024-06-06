@@ -8,9 +8,9 @@ interface ISpaceState {
   spaceList: Space[] | null; // 群组List
   getLoading: boolean;
   spaceNotes: Record<string, NotesTree> | null; // 每个群组的笔记树
-  activeSpace: Space['spaceId'] | undefined; // 当前选中的群组
   deleteNoteLoading: boolean;
   deletedSpaceNotes: Note[] | null;
+  resumeLoading: boolean;
 }
 export const space = createModel<RootModel>()({
   state: {
@@ -25,19 +25,16 @@ export const space = createModel<RootModel>()({
     createSpace(
       state,
       payload: Payload<{
-        spaces: Space[];
-        activeSpace: Space['spaceId'];
+        newSpace: Space;
       }>
     ) {
       return {
         ...state,
         createLoading: payload.loading,
-        ...(payload.status === 'success'
-          ? {
-              spaceList: payload.data.spaces,
-              activeSpace: payload.data.activeSpace,
-            }
-          : null),
+        spaceList:
+          payload.status === 'success'
+            ? [...(state.spaceList || []), payload.data.newSpace]
+            : state.spaceList,
       };
     },
 
@@ -87,7 +84,11 @@ export const space = createModel<RootModel>()({
     // 删除群组笔记
     deleteNote(
       state,
-      payload: Payload<{ spaceNotes: NotesTree; activeSpace: Space['spaceId'] }>
+      payload: Payload<{
+        spaceNotes: NotesTree;
+        activeSpace: Space['spaceId'];
+        deleteNotes: NotesTree;
+      }>
     ) {
       return {
         ...state,
@@ -98,6 +99,7 @@ export const space = createModel<RootModel>()({
                 ...state.spaceNotes,
                 [payload.data.activeSpace]: payload.data.spaceNotes,
               },
+              deletedSpaceNotes: payload.data.deleteNotes,
             }
           : null),
       };
@@ -109,6 +111,26 @@ export const space = createModel<RootModel>()({
         ...(payload.status === 'success'
           ? { deletedSpaceNotes: payload.data.notes }
           : null),
+      };
+    },
+    // 恢复笔记
+    resumeNotes(
+      state,
+      payload: Payload<{
+        spaceNotes: NotesTree;
+        activeSpace: Space['spaceId'];
+      }>
+    ) {
+      return {
+        ...state,
+        resumeLoading: payload.loading,
+        spaceNotes:
+          payload.status === 'success'
+            ? {
+                ...state.spaceNotes,
+                [payload.data.activeSpace]: payload.data.spaceNotes,
+              }
+            : state.spaceNotes,
       };
     },
   },

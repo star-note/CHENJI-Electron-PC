@@ -4,43 +4,51 @@ import { connect } from 'react-redux';
 import RichTextEditor from 'quill-react-commercial';
 import dayjs from 'dayjs';
 import { DispatchPro, RootState } from '@/store';
-import { request } from '@/utils';
+import { parseUrlParams, request } from '@/utils';
 import Board from '@/pages/publish/board';
 import { ajaxFormPostOptions, apiURL } from '@/configs/api';
 import { loadScript } from '@/pages/publish/board/config';
-import { editTime, quill, saveContent, titleInputRef } from '../utils/intex';
-import './editorContainer.less';
+import {
+  editTime,
+  getNoteById,
+  quill,
+  saveContent,
+  showLastModify,
+  titleInputRef,
+} from '../utils';
 import Avatar from '@/pages/components/avatar';
 import { MoreNoteProcess } from './MoreNoteProcess';
 import { SearchBar } from './SearchBar';
+import 'quill-react-commercial/lib/index.css';
+import './editorContainer.less';
 
 type IEditorContainer = ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>;
 
 const EditorContainer = (props: IEditorContainer) => {
-  const {
-    initContent,
-    saveStatus,
-    activeNote,
-    updateActiveNote,
-    saveLoading,
-    loginUserInfo,
-  } = props;
+  const { initContent, saveStatus, activeNote, saveLoading, loginUserInfo } =
+    props;
   const [open, setOpen] = useState(false);
   const saveInterval = useRef(null); // 5分钟保存一次笔记
   const [saveDisable, setDisable] = useState(true); // 保存按钮是否可以保存
   const [lastSave, setLastSave] = useState(''); // 上次保存时间，自动化保存时不会更新activeNote，这里使用个状态保存
+  const { note, space, recovery } = parseUrlParams(window.location.href);
 
   useEffect(() => {
     if (titleInputRef.current) {
       titleInputRef.current.value = activeNote?.title || '';
     }
-    setLastSave(dayjs(activeNote?.modifyTime).format('YYYY-MM-DD'));
+    setLastSave(showLastModify(activeNote?.modifyTime));
   }, [activeNote]);
 
   useEffect(() => {
     console.log('editing container refresh');
     loadScript();
+
+    // URL刷新，直接通过URL参数加载笔记并更新activeNote和initContent
+    if (!activeNote && note && !note.startsWith('create$$')) {
+      getNoteById(note, space);
+    }
 
     return () => clearInterval(saveInterval.current);
   }, []);
@@ -60,7 +68,7 @@ const EditorContainer = (props: IEditorContainer) => {
       saveInterval.current = setInterval(() => {
         if (editTime.current) {
           saveContent(true).then(() => {
-            setLastSave(dayjs().format('HH:mm:ss')); // 假的保存时间，一切以服务端为准
+            setLastSave(showLastModify()); // 假的保存时间，一切以服务端为准
             if (!editTime.current) setDisable(true); // 在save期间没有编辑，则editTime.current会被置为null
           });
         }
@@ -72,9 +80,9 @@ const EditorContainer = (props: IEditorContainer) => {
     editTime.current = new Date();
     setDisable(false);
   };
-  const onTilteBlur = () => {
-    updateActiveNote({ title: titleInputRef.current?.value }); // 失焦再更新active.title
-  };
+  // const onTilteBlur = () => {
+  //   updateActiveNote({ title: titleInputRef.current?.value }); // 失焦再更新active.title
+  // };
 
   const publishNote = async () => {
     if (editTime.current || saveStatus === 'failure') {
@@ -101,9 +109,10 @@ const EditorContainer = (props: IEditorContainer) => {
         <div className="note-title">
           <input
             onChange={onTitleChange}
-            onBlur={onTilteBlur}
+            // onBlur={onTilteBlur}
             placeholder="请输入标题"
             ref={titleInputRef}
+            disabled={recovery === '1'}
           />
           <div className="note-desc">
             {activeNote && activeNote.createTime ? (
@@ -132,7 +141,7 @@ const EditorContainer = (props: IEditorContainer) => {
                     userInfo={{
                       id: activeNote.modifier,
                       avatarUrl: activeNote.modifierAvator,
-                      name: activeNote.modifierName,
+                      name: activeNote.modifierName || activeNote?.creatorName,
                     }}
                     hasLogout={false}
                     size={16}
@@ -144,36 +153,43 @@ const EditorContainer = (props: IEditorContainer) => {
           </div>
         </div>
         <Space size={12} rootClassName="button-list">
-          <Button
-            disabled={saveDisable}
-            loading={saveLoading}
-            onClick={() => {
-              saveContent()
-                .then(() => {
-                  setDisable(true);
-                })
-                .catch(() => {
-                  setDisable(false);
-                });
-            }}
-          >
-            {saveStatus === 'failure' ? '重新保存' : '保存'}
-          </Button>
-          <Button onClick={publishNote}>发布</Button>
-          <MoreNoteProcess
-            note={activeNote!}
-            userInfo={
-              activeNote && activeNote.spaceId ? undefined : loginUserInfo
-            }
-          />
+          {recovery === '1' ? null : (
+            <>
+              <Button
+                disabled={saveDisable}
+                loading={saveLoading}
+                onClick={() => {
+                  saveContent()
+                    .then(() => {
+                      setDisable(true);
+                    })
+                    .catch(() => {
+                      setDisable(false);
+                    });
+                }}
+              >
+                {saveStatus === 'failure' ? '重新保存' : '保存'}
+              </Button>
+              <Button
+                onClick={publishNote}
+                disabled={note?.startsWith('create$$')}
+              >
+                发布
+              </Button>
+              <MoreNoteProcess
+                note={activeNote!}
+                userInfo={
+                  activeNote && activeNote.spaceId ? undefined : loginUserInfo
+                }
+              />
+            </>
+          )}
+
           <SearchBar />
           <Avatar hasLogout />
         </Space>
       </div>
 
-      {/* <div className="note-label">
-        <p>上次保存于：{}</p>
-      </div> */}
       <RichTextEditor
         i18n="zh"
         modules={{
@@ -194,9 +210,8 @@ const EditorContainer = (props: IEditorContainer) => {
           initContent
         }
         onChange={quillChange}
+        readOnly={recovery === '1'}
       />
-
-      <div id="quillContent" />
 
       <Drawer
         closable={false}
@@ -204,8 +219,10 @@ const EditorContainer = (props: IEditorContainer) => {
         placement="right"
         onClose={() => setOpen(false)}
         width={500}
-        bodyStyle={{
-          padding: 0,
+        styles={{
+          body: {
+            padding: 0,
+          },
         }}
         destroyOnClose
       >
@@ -215,15 +232,18 @@ const EditorContainer = (props: IEditorContainer) => {
   );
 };
 
-const mapStateToProps = ({ note, user }: RootState) => ({
+const mapStateToProps = ({ note, user, space }: RootState) => ({
   activeNote: note.activeNote,
   saveStatus: note.saveStatus,
   initContent: note.initContent,
   saveLoading: note.saveLoading,
   loginUserInfo: user.userInfo,
 });
-const mapDispatchToProps = ({ note: { updateActiveNote } }: DispatchPro) => ({
-  updateActiveNote,
+const mapDispatchToProps = ({ note, space }: DispatchPro) => ({
+  // resumeNotes,
+  // resumeSpaceNotes,
+  // getDeletedNotes,
+  // getDeletedSpaceNotes,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditorContainer);

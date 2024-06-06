@@ -8,6 +8,7 @@ export interface Note {
   modifyTime?: string;
   childNodes?: Note[];
   spaceId?: string;
+  isLeaf?: boolean; // 适配antd的tree数据格式，表示是否强制设置为子节点
 }
 
 export type NotesTree = Note[];

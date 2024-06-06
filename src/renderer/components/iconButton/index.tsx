@@ -9,6 +9,7 @@ import {
   StarOutlined,
   LikeOutlined,
   MessageOutlined,
+  UndoOutlined,
 } from '@ant-design/icons';
 import './index.less';
 
@@ -22,7 +23,8 @@ type IIconButton = {
     | 'search'
     | 'star'
     | 'like'
-    | 'message';
+    | 'message'
+    | 'undo';
   style?: CSSProperties;
   onClick?: (e: MouseEvent<HTMLDivElement>) => void;
   className?: string;
@@ -39,6 +41,7 @@ export const IconButton = (props: IIconButton) => {
     star: <StarOutlined />,
     like: <LikeOutlined />,
     message: <MessageOutlined />,
+    undo: <UndoOutlined />,
   };
   return (
     <div

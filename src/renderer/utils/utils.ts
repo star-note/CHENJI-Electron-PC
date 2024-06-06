@@ -56,7 +56,7 @@ export function addParamsToUrl(
 }
 
 // 解析url的参数
-export function parseUrlParams(url: string): Record<string, unknown> {
+export function parseUrlParams(url: string): Record<string, string> {
   if (url.indexOf('?') >= 0) {
     const paraStr = url.substring(url.indexOf('?') + 1);
     if (paraStr) {

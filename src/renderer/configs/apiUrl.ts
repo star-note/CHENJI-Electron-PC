@@ -15,6 +15,7 @@ export const apiConfig = {
   deleteNote: '/notes/delete', // 删除个人笔记
   getDeletedNotes: '/notes/getDeleted', // 获取个人被删除笔记，回收站
   copyMoveNotes: '/notes/copyMove', // 笔记的复制或移动
+  resumeNotes: '/notes/resume', // 笔记的恢复
 
   // 群组 Spaces
   getAllSpaces: '/spaces/getAll', // 查找某用户的所有权限群组
@@ -24,6 +25,7 @@ export const apiConfig = {
   saveSpaceNote: '/spaces/saveNote', // 保存或新建群组笔记
   deleteSpaceNote: '/spaces/deleteNote', // 删除群组笔记
   getDeletedSpaceNotes: '/spaces/getDeletedNotes', // 获取群组中被本人删除笔记，回收站
+  resumeSpaceNotes: '/spaces/resumeNote', // 笔记的恢复
 
   // 搜索
   search: '/search/all', // 笔记搜索

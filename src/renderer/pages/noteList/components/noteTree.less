@@ -1,51 +1,6 @@
 @import '../../../global.less';
 
-.note-container {
-  color: @primary-color;
-  .note-item {
-    height: 40px;
-    line-height: 40px;
-    cursor: pointer;
-    position: relative;
-    .item-title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-  }
-
-  .note-item-hide {
-    display: none;
-  }
-  .note-item-active {
-    background-color: @menu-bg;
-    color: @active-color;
-    .handler-zoo {
-      opacity: 1;
-    }
-  }
-  .note-item:hover {
-    .handler-zoo {
-      opacity: 1;
-    }
-  }
-  .note-children {
-    transition: max-height 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-    max-height: 100%;
-    overflow: hidden;
-  }
-  .note-hide {
-    max-height: 0;
-    overflow: hidden;
-    // transition: max-height 0.15s cubic-bezier(0.645, 0.045, 0.355, 1);
-  }
-  .note-folder-icon {
-    font-size: @menu-icon-size;
-    margin-right: 4px;
-  }
-}
-
-.note-container .note-item .handler-zoo,
+.note-container .ant-tree-title .handler-zoo,
 .space-name .handler-zoo {
   position: absolute;
   right: 4px;
@@ -57,8 +12,7 @@
     margin-left: 4px;
   }
 }
-.space-name:hover .handler-zoo,
-.space-name-active .handler-zoo {
+.space-name:hover .handler-zoo {
   opacity: 1;
 }
 
@@ -66,29 +20,51 @@
   width: 100%;
 }
 
-// .note-container.ant-tree-directory {
-//   .ant-tree-list {
-//     .ant-tree-treenode-selected::before {
-//       background-color: @menu-bg;
-//     }
-//     // .ant-tree-treenode::before {
-//     //   bottom: 0;
-//     // }
-//     // .ant-tree-treenode {
-//     //   padding: 0;
-//     // }
-//   }
-// }
-
 .note-container {
+  color: @primary-color;
+  background-color: unset;
+  border-radius: 0;
+  .ant-tree-treenode {
+    padding: 0;
+  }
+  .ant-tree-list .ant-tree-treenode:before {
+    bottom: 0;
+  }
+  .ant-tree-switcher {
+    width: 0;
+  }
   .ant-tree-node-content-wrapper {
     overflow: hidden;
     display: flex;
+    position: static;
 
     .ant-tree-title {
       display: inline-block;
       height: 40px;
       flex: 1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
     }
   }
+  .ant-tree-treenode:hover,
+  .ant-tree-node-selected {
+    .handler-zoo {
+      opacity: 1;
+    }
+  }
+  .ant-tree-indent-unit {
+    width: 16px;
+  }
+
+  .quick-add-button {
+    color: @active-color;
+    height: 48px;
+    margin: 10px 0;
+    width: 80%;
+    border: 1px dashed @hr-color;
+    cursor: pointer;
+    border-radius: 4px;
+  }
 }
+

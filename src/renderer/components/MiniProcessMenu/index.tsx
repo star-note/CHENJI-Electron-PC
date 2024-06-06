@@ -1,23 +1,27 @@
 import ReactDOM from 'react-dom';
 import './index.less';
 
-export type IRightMenu = {
+export type IMiniProcessMenu = {
   visible?: boolean;
   data: { label: string; handler?: () => void; disable?: boolean }[];
   position?: { top?: string; left?: string };
 };
-export const RightMenu = (props: IRightMenu) => {
+export const MiniProcessMenu = (props: IMiniProcessMenu) => {
   const { visible = false, data = [], position } = props;
   if (!visible) return null;
   return ReactDOM.createPortal(
-    <div className="note-more-handler-menu" style={{ ...position }}>
+    <div className="mini-process-menu" style={{ ...position }}>
       {data.map(item => (
         <div
-          className={`right-menu-item ${
-            item.disable ? 'right-menu-item-disable' : ''
+          className={`mini-process-menu-item ${
+            item.disable ? 'mini-process-menu-item-disable' : ''
           }`}
           key={item.label}
-          onClick={item.handler}
+          onClick={() => {
+            if (!item.disable && item.handler) {
+              item.handler();
+            }
+          }}
         >
           <p>{item.label}</p>
         </div>

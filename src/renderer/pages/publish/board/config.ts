@@ -160,6 +160,12 @@ export const loadScript = () => {
       script.src = `${staticUrl}@starnote/publish-${key}/dist/publish.min.js`;
       document.body.appendChild(script);
       script.onload = () => {
+        console.log(
+          key,
+          'sdk load',
+          window[`$publish_${key}`],
+          window.PublishConfigs
+        );
         store.dispatch.publish.updatePublishConfigs({
           [key]: window[`$publish_${key}`],
         });

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { Input, InputRef, Menu, Modal } from 'antd';
 import {
   HomeOutlined,
@@ -13,10 +13,13 @@ import {
 import { connect } from 'react-redux';
 import { MyNotes, MyRecovery, MySpaceNotes } from '@/pages/noteList/firstNotes';
 import { DispatchPro, RootState } from '@/store';
-import { parseUrlParams, Storage } from '@/utils';
-import './index.less';
+import { Storage, parseUrlParams } from '@/utils';
 import { MenuRightIcons } from './menuRightIcons';
-import { addNewNote } from '../noteList/utils/intex';
+import { useAddNewNote } from '../noteList/utils';
+import { useUrlKeys } from './hooks';
+import { getUserNotes } from '../noteList/utils/firstNotes';
+import './index.less';
+import configs from '@/configs';
 
 type ILayout = ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>;
@@ -24,42 +27,40 @@ type ILayout = ReturnType<typeof mapDispatchToProps> &
 const Layout = (props: ILayout) => {
   const {
     userNotes,
-    activeNote,
     deletedNotes,
     deletedSpaceNotes,
     spaceList,
-    activeSpace,
     spaceNotes,
     userInfo = {},
     setUserInfo,
-    getUserNotes,
+    fetchUserNotes,
     getAllSpace,
-    changeState,
-    changeSpaceState,
     openKeys,
     changeOpenKeys,
     getFirstLoading,
-    getLoading,
     createSpace,
+    getSpaceLoading,
   } = props;
-  const [selectedKeys, setSelectedKeys] = useState<string[]>(['home']); // menu 选中的key
+  const [selectedKeys, setSelectedKeys] = useUrlKeys(); // 根据URL确定menu选中的key
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false); // 第一栏是否直接收起
   const [isAddSpaceModalShow, setModalShow] = useState(false); // 新增群组的Modal
   const [spaceTitle, setTitle] = useState(''); // 新增群组的Title
   const spaceTitleRef = useRef<InputRef>(null);
-  const location = useLocation(); // 用于监听location change
+  const addNewNote = useAddNewNote();
+  const defaultUserNotes = getUserNotes(); // 默认从缓存读取用户笔记
+  const { space } = parseUrlParams(window.location.href);
 
   // 控制侧边栏拖动改变宽度
   const dragListener = (delay: number) => {
     const dragBtn = document.getElementById('drag-btn');
-    const firstSlider = document.getElementsByClassName('first-slider')[0];
+    const firstSlider = document.querySelector('.first-slider');
     let firstWidth = 300; // firstSlider的默认宽度
     if (dragBtn) {
-      dragBtn.onmousedown = e => {
+      dragBtn.onmousedown = (e) => {
         let startX = e.clientX;
         let initTime = 0;
-        document.onmousemove = ee => {
+        document.onmousemove = (ee) => {
           const nowTime = new Date().getTime();
           if (nowTime - initTime > delay) {
             initTime = nowTime;
@@ -68,8 +69,13 @@ const Layout = (props: ILayout) => {
             startX = endX; // 更新鼠标初始位置
             firstWidth += moveX;
             // 边界值处理
-            // ？
-            firstSlider.style.width = `${firstWidth}px`;
+            if (firstWidth < 90) {
+              firstSlider.style.width = '80px';
+              setCollapsed(true);
+            } else {
+              firstSlider.style.width = `${firstWidth}px`;
+              setCollapsed(false);
+            }
           }
           return false;
         };
@@ -91,7 +97,7 @@ const Layout = (props: ILayout) => {
     }
 
     // 预请求我的笔记树和群组列表
-    getUserNotes({
+    fetchUserNotes({
       params: {},
       apiName: 'getUserNotes',
     });
@@ -100,57 +106,8 @@ const Layout = (props: ILayout) => {
       apiName: 'getAllSpaces',
     });
 
-    // // 页面刷新处理选择的菜单和打开的菜单
-    // const path = window.location.pathname;
-
-    // // note为目标noteId或者新增笔记时的父节点，space为目标spaceId，create表示是否新建笔记1/0
-    // const { note, space } = parseUrlParams(window.location.href);
-    // if (path === '/') {
-    //   setSelectedKeys(['home']);
-    //   changeOpenKeys([]);
-    // } else if (path === '/blog') {
-    //   setSelectedKeys(['blog']);
-    //   changeOpenKeys([]);
-    // } else if (path.startsWith('/notelist') && space) {
-    //   setSelectedKeys([]);
-    //   changeOpenKeys(['spaces']);
-    //   changeSpaceState({
-    //     activeSpace: space,
-    //   }); // 在群组组件中监听activeSpace会请求该space的笔记内容
-    // } else if (path.startsWith('/notelist') && !space) {
-    //   setSelectedKeys([]);
-    //   changeOpenKeys(['myNote']);
-    // }
-
     dragListener(30);
   }, []);
-
-  useEffect(() => {
-    const { pathname } = location;
-
-    // note为目标noteId或者新增笔记时的父节点，space为目标spaceId，create表示是否新建笔记1/0
-    const { note, space } = parseUrlParams(window.location.href);
-    if (pathname === '/') {
-      setSelectedKeys(['home']);
-      changeState({
-        activeNote: null,
-      });
-    } else if (pathname === '/blog') {
-      setSelectedKeys(['blog']);
-      changeState({
-        activeNote: null,
-      });
-    } else if (pathname.startsWith('/notelist') && space) {
-      setSelectedKeys([]);
-      changeOpenKeys(['spaces']);
-      changeSpaceState({
-        activeSpace: space,
-      }); // 在群组组件中监听activeSpace会请求该space的笔记内容
-    } else if (pathname.startsWith('/notelist') && !space) {
-      setSelectedKeys([]);
-      changeOpenKeys(['myNote']);
-    }
-  }, [location]);
 
   // 左侧菜单树的选择跳转
   const onSelect = ({
@@ -160,16 +117,12 @@ const Layout = (props: ILayout) => {
     key: string;
     selectedKeys: string[];
   }) => {
-    const urlMapping = {
-      home: '/',
-      blog: '/blog',
-      material: '/material',
-    } as Record<string, string>;
     setSelectedKeys(keys);
-    navigate(urlMapping[key]);
+    navigate(key);
   };
 
   const toggleCollapsed = () => {
+    document.querySelector('.first-slider').style.width = '';
     setCollapsed(!collapsed);
   };
   const onAddSpaceSubmit = () => {
@@ -179,8 +132,9 @@ const Layout = (props: ILayout) => {
           title: spaceTitle.trim(),
         },
         apiName: 'createSpace',
-      }).then(() => {
+      }).then((data) => {
         setModalShow(false);
+        navigate(`/space?space=${data.newSpace.spaceId}`);
       });
     }
   };
@@ -200,7 +154,7 @@ const Layout = (props: ILayout) => {
           collapsed ? 'first-slider-collapsed' : ''
         }`}
       >
-        <div className="logo">辰记</div>
+        <div className="logo">{configs.htmlTitle}</div>
         <div onClick={toggleCollapsed} className="slider-collapse">
           {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
         </div>
@@ -216,13 +170,13 @@ const Layout = (props: ILayout) => {
           onSelect={onSelect}
           inlineCollapsed={collapsed}
         >
-          <Menu.Item key="home" icon={<HomeOutlined />}>
+          <Menu.Item key="/" icon={<HomeOutlined />}>
             首页
           </Menu.Item>
-          <Menu.Item key="blog" icon={<DesktopOutlined />}>
+          <Menu.Item key="/blog" icon={<DesktopOutlined />}>
             我的博客
           </Menu.Item>
-          <Menu.Item key="material" icon={<DesktopOutlined />}>
+          <Menu.Item key="/material" icon={<DesktopOutlined />}>
             素材库
           </Menu.Item>
           <Menu.SubMenu
@@ -233,7 +187,7 @@ const Layout = (props: ILayout) => {
                 <MenuRightIcons
                   showLoading={getFirstLoading}
                   onPlusClick={() => {
-                    addNewNote(null, '-1');
+                    addNewNote(null);
                     changeOpenKeys([...openKeys, 'myNote']);
                   }}
                 />
@@ -242,7 +196,10 @@ const Layout = (props: ILayout) => {
             icon={<BookOutlined />}
             className="first-note-tree"
           >
-            <MyNotes userNotes={userNotes} activeNote={activeNote} />
+            <MyNotes
+              userNotes={userNotes || defaultUserNotes}
+              loading={getFirstLoading}
+            />
           </Menu.SubMenu>
           <Menu.SubMenu
             key="spaces"
@@ -250,7 +207,7 @@ const Layout = (props: ILayout) => {
               <>
                 <span>群组</span>
                 <MenuRightIcons
-                  showLoading={getLoading}
+                  showLoading={getSpaceLoading}
                   onPlusClick={() => {
                     setModalShow(true);
                     changeOpenKeys([...openKeys, 'spaces']);
@@ -263,17 +220,15 @@ const Layout = (props: ILayout) => {
           >
             <MySpaceNotes
               spaceList={spaceList}
-              activeSpace={activeSpace}
+              space={space}
               spaceNotes={spaceNotes}
-              activeNote={activeNote}
             />
           </Menu.SubMenu>
           <Menu.SubMenu key="recovery" title="回收站" icon={<DeleteOutlined />}>
             <MyRecovery
-              userId={userInfo.id}
+              userId={userInfo?.id}
               deletedNotes={deletedNotes}
               deletedSpaceNotes={deletedSpaceNotes}
-              activeNote={activeNote}
             />
           </Menu.SubMenu>
         </Menu>
@@ -305,29 +260,25 @@ const Layout = (props: ILayout) => {
 };
 
 const mapStateToProps = ({ note, space, user, sys }: RootState) => ({
-  getLoading: note.getLoading,
-  activeNote: note.activeNote,
+  getSpaceLoading: space.getLoading,
   userNotes: note.userNotes,
   getFirstLoading: note.getFirstLoading,
   spaceList: space.spaceList,
   spaceNotes: space.spaceNotes,
-  activeSpace: space.activeSpace,
   deletedNotes: note.deletedNotes,
   deletedSpaceNotes: space.deletedSpaceNotes,
   userInfo: user.userInfo,
   openKeys: sys.openKeys,
 });
 const mapDispatchToProps = ({
-  note: { getUserNotes, changeState },
-  space: { getAllSpace, createSpace, changeState: changeSpaceState },
+  note: { fetchUserNotes },
+  space: { getAllSpace, createSpace },
   user: { setUserInfo },
   sys: { changeOpenKeys },
 }: DispatchPro) => ({
-  getUserNotes,
+  fetchUserNotes,
   getAllSpace,
   createSpace,
-  changeState,
-  changeSpaceState,
   setUserInfo,
   changeOpenKeys,
 });

@@ -2,7 +2,7 @@ import { MouseEvent } from 'react';
 import { FolderOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { IconButton } from '@/components/iconButton';
 import store from '@/store';
-import { addNewNote, useNoteClick } from '../utils/intex';
+import { addNewNote, useNoteClick } from '../utils';
 import { Note } from '../note.interface';
 
 export interface INoteItem {

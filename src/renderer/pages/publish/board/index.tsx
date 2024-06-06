@@ -1,7 +1,7 @@
 import { FC, useState } from 'react';
 import { Tabs } from 'antd';
 import { connect } from 'react-redux';
-import { DoubleRightOutlined } from '@ant-design/icons';
+import { DoubleRightOutlined, SettingOutlined } from '@ant-design/icons';
 import { DispatchPro, RootState } from '@/store';
 import configs from '@/configs';
 import { elecPublish, onProcess } from '@/electron';
@@ -10,6 +10,7 @@ import { PublishForm, TargetLogo } from './components';
 import { PublishDetail } from './detail';
 import './index.less';
 import { convertHtml } from '../utils/convert';
+import { WidthSpace } from '@/components';
 
 type IPublishBoard = ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps> & {
@@ -148,6 +149,8 @@ const Board: FC<IPublishBoard> = (props) => {
           <div onClick={closeDrawer}>
             <DoubleRightOutlined />
           </div>
+          <WidthSpace />
+          <SettingOutlined />
         </div>
         {(window.electron ? electronPublishKeys : webPublishKeys).map(
           (key: string) => {

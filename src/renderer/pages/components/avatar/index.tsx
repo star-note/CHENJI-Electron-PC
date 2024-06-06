@@ -15,8 +15,8 @@ type IAvator = ReturnType<typeof mapDispatchToProps> &
 
 const Avatar: FC<IAvator> = props => {
   const { loginUserInfo = {}, logout, userInfo, size, hasLogout } = props;
-  const { avatarUrl, name, id } = userInfo || loginUserInfo;
-  return (
+  const { avatarUrl, name } = userInfo || loginUserInfo;
+  return avatarUrl || name ? (
     <div className="avator-container">
       <Popover
         content={<UserMenu hasLogout={hasLogout} />}
@@ -29,11 +29,11 @@ const Avatar: FC<IAvator> = props => {
           src={avatarUrl}
           size={size || 24}
         >
-          {(name || `辰记用户${id}`).substring(0, 1).toUpperCase()}
+          {name.substring(0, 1).toUpperCase()}
         </AntdAvatar>
       </Popover>
     </div>
-  );
+  ) : null;
 };
 
 const mapStateToProps = ({ user }: RootState) => ({
