@@ -13,6 +13,7 @@ import {
 import { Note } from '../note.interface';
 import { getOptionsChildren, getUserNotes } from '../utils/firstNotes';
 import { UserInfo, parseUrlParams } from '@/utils';
+import { useCopyMoveNote } from '../utils/copyMove';
 
 export interface IRightMenu {
   data: {
@@ -21,12 +22,14 @@ export interface IRightMenu {
     expandedKeys: React.Key[];
     loginUserId?: UserInfo['id'];
   };
-  foldCB: (noteId: Note['noteId']) => void;
-  foldOthersCB: (noteId: Note['noteId']) => void;
+  visiable: boolean;
+  // foldCB: (noteId: Note['noteId']) => void;
+  // foldOthersCB: (noteId: Note['noteId']) => void;
+  rightMenuCB: (type: 'fold'|'foldOthers'|'copyMove', noteId: Note['noteId']) => void;
 }
 
 export const RightMenu: FC<IRightMenu> = props => {
-  const { data, foldCB, foldOthersCB } = props;
+  const { data, visiable, rightMenuCB } = props;
   const [modalTargetOptions, setModalTargetOptions] = useState(null); // 笔记复制、移动modal目标选择器的动态数据源
   const [modalData, setModalData] = useState<{
     type: 'copy' | 'move';
@@ -34,29 +37,17 @@ export const RightMenu: FC<IRightMenu> = props => {
   } | null>(null); // 笔记复制、移动modal的类型，源笔记等数据，同时控制modal是否展示
   const selectedOptions = useRef<[]>(null); // 笔记复制、移动modal的目标选择器最终选择的options父子节点id数组
   const [cascaderError, setCascaderError] = useState(''); // 笔记复制、移动modal的报错信息
-  const [visiable, setVisiable] = useState(false); // 更多菜单是否展示
   const { note: activeNoteId, space } = parseUrlParams(window.location.href);
   const [confirmLoading, setConfirmLoading] = useState(false); // 笔记复制、移动modal的确定button loading
   const { getDeletedNotes } = (store.dispatch as DispatchPro).note;
   const { getDeletedSpaceNotes } = (store.dispatch as DispatchPro).space;
 
   const [rightMenuData, setRightMenuData] = useState();
-  // const addNewNote = useAddNewNote();
   const navigate = useNavigate();
+  const [requestCopyMove] = useCopyMoveNote(); // 复制、移动笔记的公共hooks
 
   useEffect(() => {
     if (data) {
-      // 其他地方点击时，让菜单隐藏
-      const portalClick = () => {
-        setVisiable(false);
-        window.removeEventListener('click', portalClick);
-      };
-      window.addEventListener('click', portalClick, false);
-
-      if (!visiable) {
-        setVisiable(true);
-      }
-
       if (data.note) {
         const { note, expandedKeys, loginUserId } = data;
         const { noteId, isLeaf, childNodes, title, spaceId } = note;
@@ -93,7 +84,7 @@ export const RightMenu: FC<IRightMenu> = props => {
           result[0].disable = true;
         } else {
           result[0].handler = () => {
-            if (noteId) foldCB(noteId);
+            if (noteId) rightMenuCB('fold', noteId);
           };
         }
         if (
@@ -103,7 +94,7 @@ export const RightMenu: FC<IRightMenu> = props => {
           result[1].disable = true;
         }
         result[1].handler = () => {
-          foldOthersCB(noteId);
+          rightMenuCB('foldOthers', noteId);
         };
         const target = [
           {
@@ -127,6 +118,7 @@ export const RightMenu: FC<IRightMenu> = props => {
           result[2].disable = true; // 正在新建的笔记不能复制
           result[3].disable = true; // 正在新建的笔记不能移动
         }
+        // 复制只复制当前节点，不复制子节点
         result[2].handler = () => {
           setModalTargetOptions(target);
           setModalData({
@@ -167,9 +159,10 @@ export const RightMenu: FC<IRightMenu> = props => {
                   apiName: 'getDeletedNotes',
                 });
               }
+              // 防止笔记是从回收站回复后再删除，URL变化
               navigate(
                 `${window.location.pathname}${window.location.search}&recovery=1`.replace(
-                  '&recovery=0',
+                  '&origin=recovery',
                   ''
                 )
               );
@@ -237,31 +230,20 @@ export const RightMenu: FC<IRightMenu> = props => {
                   modalData?.type === 'copy' ? '复制' : '移动'
                 }，源笔记已在目标笔记中`
               );
-            } else {
+            } else if (modalData) {
               setConfirmLoading(true);
-              (store.dispatch as DispatchPro).note
-                .copyMoveNotes({
-                  params: {
-                    type: modalData?.type,
-                    note: modalData?.note,
-                    selectedOptions: targetOptions,
-                  },
-                  apiName: 'copyMoveNotes',
-                })
-                .then(result => {
+              // eslint-disable-next-line promise/no-nesting
+              requestCopyMove(
+                modalData?.type,
+                modalData?.note,
+                targetOptions,
+                () => {
                   setConfirmLoading(false);
                   setModalData(null);
-
-                  // 根据目标笔记刷新左侧笔记树，移动的话源笔记也需要刷新，还需要设置activeNote，这里干脆整个页面刷新，先弄简单点
-                  window.location.href =
-                    targetOptions && targetOptions[0] === 'mySpaces'
-                      ? `/notelist?note=${
-                          result && result.noteId ? result.noteId : noteId
-                        }&space=${targetOptions[1]}`
-                      : `/notelist?note=${
-                          result && result.noteId ? result.noteId : noteId
-                        }`;
-                });
+                }
+              ).then((result) => {
+                rightMenuCB('copyMove', result?.noteId || noteId);
+              });
             }
           }
         } else {

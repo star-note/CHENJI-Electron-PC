@@ -4,7 +4,7 @@ import store from '@/store';
 import { parseUrlParams } from '@/utils';
 
 export const useUrlKeys = () => {
-  // note为目标noteId或者新增笔记时的父节点，space为目标spaceId，recovery表示是否新建回收站笔记1/0
+  // note为目标noteId或者新增笔记时的父节点，space为目标spaceId，recovery表示是否新建回收站笔记1
   const { note, space, recovery } = parseUrlParams(window.location.href);
   const location = useLocation();
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);

@@ -51,28 +51,30 @@ export const updateFirstNotes = (
   if (isDelete) {
     firstNotes = deleteTreeData(firstNotes, note.noteId);
   } else {
+    const updateOrAddNote = (
+      list: NotesTree,
+      _noteId: string | null,
+      _note: Note
+    ) => {
+      // 1. 遍历数组来查找是否存在具有给定_noteId的元素
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].noteId === _noteId) {
+          // 2. 如果找到了，就编辑该元素
+          Object.assign(list[i], _note); // 使用Object.assign来合并新数据和旧数据
+          return; // 找到并编辑后，退出函数
+        }
+      }
+      // 3. 如果没有找到，就创建一个新元素并将其添加到数组中
+      list.push({ ..._note }); // 使用扩展运算符(...)来展开_note中的属性
+    };
+
     const findIdList = (
       list: NotesTree,
       _parentId: string | null | undefined,
       _noteId: string | null
     ) => {
       if (_parentId === null || _parentId === undefined) {
-        // 无parentId时，顶级新增编辑
-        let isCreate = true; // 是否存在此noteId
-        for (let i = 0; i < list.length; i += 1) {
-          if (list[i].noteId === _noteId) {
-            isCreate = false;
-            list[i] = {
-              ...list[i],
-              ...note,
-            };
-          }
-          break;
-        }
-
-        if (isCreate) {
-          list.push(note);
-        }
+        updateOrAddNote(list, _noteId, note); // 直接在list中编辑或者新增子笔记
       } else {
         // 有parentId时，递归找到哪级新增/编辑
         for (let i = 0; i < list.length; i += 1) {

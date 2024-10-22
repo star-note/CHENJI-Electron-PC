@@ -33,7 +33,11 @@ const Register = (props: IRegister) => {
     email: string;
   }) => {
     signup({
-      params: { ...values, password: md5(values.password) },
+      params: {
+        ...values,
+        password: md5(values.password),
+        confirm: md5(values.confirm),
+      },
       apiName: 'signup',
     }).then(data => {
       if (data && data.token) {
